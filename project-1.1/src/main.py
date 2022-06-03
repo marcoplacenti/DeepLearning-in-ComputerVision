@@ -18,9 +18,9 @@ def data_preparation():
                                         transforms.ToTensor()])
 
     batch_size = 64
-    trainset = Hotdog_NotHotdog(train=True, transform=train_transform, data_path='dtu/datasets1/02514/hotdog_nothotdog/')
+    trainset = Hotdog_NotHotdog(train=True, transform=train_transform)#, data_path='dtu/datasets1/02514/hotdog_nothotdog/')
     train_loader = DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=3)
-    testset = Hotdog_NotHotdog(train=False, transform=test_transform, data_path='dtu/datasets1/02514/hotdog_nothotdog/')
+    testset = Hotdog_NotHotdog(train=False, transform=test_transform)#, data_path='dtu/datasets1/02514/hotdog_nothotdog/')
     test_loader = DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=3)
 
     return trainset, train_loader, testset, test_loader
