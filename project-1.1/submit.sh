@@ -1,5 +1,3 @@
-02514sh
-
 module load python3/3.9.10
 
 python3 -m venv .
