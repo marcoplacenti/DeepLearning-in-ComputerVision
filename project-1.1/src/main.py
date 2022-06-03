@@ -66,7 +66,8 @@ if __name__ == "__main__":
 
         loss = loss_func(preds, labels)
 
-        print(f"Iteration {batch_idx}/{len(test_loader)}: Loss = {loss}")
+        if batch_idx % 20 == 0:
+            print(f"Iteration {batch_idx}/{len(test_loader)}: Loss = {loss}")
 
         preds = torch.exp(preds)
         outcome = np.argmax(preds.cpu().detach().numpy(), axis=1)
