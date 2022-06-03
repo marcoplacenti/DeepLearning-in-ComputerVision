@@ -2,7 +2,8 @@ import torch
 import torch.optim as optim
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
-import os
+
+import numpy as np
 
 from data.data_prep import Hotdog_NotHotdog
 from models.architectures import *
@@ -56,6 +57,7 @@ if __name__ == "__main__":
     for epoch in range(1, 5+1):
         train(model, loss_func, train_loader, optimizer, epoch, device)
 
+    correct_preds = 0
     for batch_idx, (data, labels) in enumerate(test_loader):
         data, labels = data.to(device), labels.to(device)
 
@@ -66,6 +68,10 @@ if __name__ == "__main__":
         loss = loss_func(preds, labels)
 
         print(f"Iteration {batch_idx}/{len(test_loader)}: Loss = {loss}")
+
+        print(preds)
+        print(np.argmax(preds))
+        correct_preds +=  0
 
 
     print("Saving model weights and optimizer...")
