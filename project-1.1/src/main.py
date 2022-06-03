@@ -14,7 +14,7 @@ if __name__ == "__main__":
                                         transforms.ToTensor()])
 
     batch_size = 64
-    trainset = Hotdog_NotHotdog(train=True, transform=train_transform, data_path=os.path.abspath("/dtu/datasets1/02514/hotdog_nothotdog/train"))
+    trainset = Hotdog_NotHotdog(train=True, transform=train_transform)
     train_loader = DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=3)
-    testset = Hotdog_NotHotdog(train=False, transform=test_transform, data_path=os.path.abspath("/dtu/datasets1/02514/hotdog_nothotdog/test"))
+    testset = Hotdog_NotHotdog(train=False, transform=test_transform)
     test_loader = DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=3)
