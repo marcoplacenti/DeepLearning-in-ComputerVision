@@ -49,11 +49,11 @@ if __name__ == "__main__":
     print(f"Running on {device}")
     
     model = ConvNet().to(device)
-    optimizer = optim.Adam(model.parameters(), lr=0.01)
+    optimizer = optim.Adam(model.parameters(), lr=0.005)
     
     loss_func = nn.NLLLoss()
 
-    for epoch in range(1, 5+1):
+    for epoch in range(1, 25+1):
         train(model, loss_func, train_loader, optimizer, epoch, device)
 
     correct_preds = 0
