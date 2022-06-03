@@ -9,8 +9,8 @@ class ConvNet(nn.Module):
         self.conv1 = nn.Conv2d(3, 16, 3, 1)
         self.dropout1 = nn.Dropout2d(0.25)
         self.dropout2 = nn.Dropout2d(0.5)
-        self.fc1 = nn.Linear(246016, 128)
-        self.fc2 = nn.Linear(128, 2)
+        self.fc1 = nn.Linear(63504, 32)
+        self.fc2 = nn.Linear(32, 2)
 
         self.log_softmax = nn.LogSoftmax(1)
 
