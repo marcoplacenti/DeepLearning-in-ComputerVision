@@ -69,6 +69,7 @@ if __name__ == "__main__":
         print(f"Iteration {batch_idx}/{len(test_loader)}: Loss = {loss}")
 
         outcome = np.argmax(preds.cpu().detach().numpy())
+        print(outcome)
         correct_preds +=  np.sum([1 if item == labels[idx] else 0 for idx, item in enumerate(outcome)])
 
     print(f"\nTest Accuracy: {round(correct_preds/len(testset),3)}\n")
