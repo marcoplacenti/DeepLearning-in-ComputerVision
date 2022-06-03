@@ -22,7 +22,7 @@ def data_preparation():
     testset = Hotdog_NotHotdog(train=False, transform=test_transform)
     test_loader = DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=3)
 
-    return train_loader, test_loader
+    return trainset, train_loader, testset, test_loader
 
 def train(model, loss_func, train_loader, optimizer, epoch, device):
     
@@ -41,13 +41,12 @@ def train(model, loss_func, train_loader, optimizer, epoch, device):
             print(f"Epoch {epoch} Iteration {batch_idx}/{len(train_loader)}: Loss = {loss}")
 
 
-
-
 if __name__ == "__main__":
 
-    train_loader, test_loader = data_preparation()
+    trainset, train_loader, testset, test_loader = data_preparation()
 
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
+    print(f"Running on {device}")
     
     model = ConvNet().to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.01)
@@ -69,11 +68,11 @@ if __name__ == "__main__":
 
         print(f"Iteration {batch_idx}/{len(test_loader)}: Loss = {loss}")
 
-        print(preds)
-        print(np.argmax(preds))
-        correct_preds +=  0
+        outcome = np.argmax(preds)
+        correct_preds +=  np.sum([1 if item == labels[idx] else 0 for idx, item in enumerate(outcome)])
 
+    print(f"\nTest Accuracy: {round(correct_preds/len(testset),3)}\n")
 
     print("Saving model weights and optimizer...")
-    torch.save(model.state_dict(), 'src/models/model_final.pt')
-    torch.save(optimizer.state_dict(), 'src/models/optim_final.pt')
+    torch.save(model.state_dict(), './src/models/model_final.pt')
+    torch.save(optimizer.state_dict(), './src/models/optim_final.pt')
