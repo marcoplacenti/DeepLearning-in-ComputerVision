@@ -69,5 +69,5 @@ if __name__ == "__main__":
 
 
     print("Saving model weights and optimizer...")
-    torch.save(model.state_dict(), 'models/model_final.pt')
-    torch.save(optimizer.state_dict(), 'models/optim_final.pt')
+    torch.save(model.state_dict(), 'src/models/model_final.pt')
+    torch.save(optimizer.state_dict(), 'src/models/optim_final.pt')
