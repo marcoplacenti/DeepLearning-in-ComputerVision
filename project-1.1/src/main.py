@@ -18,3 +18,5 @@ if __name__ == "__main__":
     train_loader = DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=3)
     testset = Hotdog_NotHotdog(train=False, transform=test_transform)
     test_loader = DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=3)
+
+    print(len(train_loader))
