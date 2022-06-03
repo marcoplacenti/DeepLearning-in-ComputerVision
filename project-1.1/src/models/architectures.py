@@ -13,6 +13,8 @@ class ConvNet(nn.Module):
         self.fc1 = nn.Linear(246016, 128)
         self.fc2 = nn.Linear(128, 1)
 
+        self.log_softmax = nn.LogSoftmax()
+
     def forward(self, x):
         x = self.conv1(x)
         x = F.relu(x)
@@ -23,4 +25,4 @@ class ConvNet(nn.Module):
         x = torch.flatten(x, 1)
         x = self.fc1(x)
         x = self.fc2(x)
-        return nn.LogSoftmax(x)
+        return self.log_softmax(x)
