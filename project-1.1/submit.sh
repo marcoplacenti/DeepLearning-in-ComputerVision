@@ -1,4 +1,7 @@
+
 module load python3/3.9.10
+
+pip install --upgrade pip
 
 python3 -m venv .
 
