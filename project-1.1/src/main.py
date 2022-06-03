@@ -71,8 +71,7 @@ if __name__ == "__main__":
     predictions, agg_labels = [], []
     for batch_idx, (data, labels) in enumerate(test_loader):
         data, labels = data.to(device), labels.to(device)
-        agg_labels.extend(labels)
-
+        
         model.eval()
         optimizer.zero_grad()
         preds = model(data)
@@ -82,6 +81,7 @@ if __name__ == "__main__":
         if batch_idx % 20 == 0:
             print(f"Iteration {batch_idx}/{len(test_loader)}: Loss = {loss}")
 
+        agg_labels.extend(labels.cpu().detach().numpy())
         predictions.extend(torch.exp(preds).cpu().detach().numpy())
     
     performance_metrics(predictions, agg_labels)
