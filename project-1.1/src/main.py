@@ -9,6 +9,7 @@ from sklearn.metrics import confusion_matrix
 from data.data_prep import Hotdog_NotHotdog
 from models.architectures import *
 
+torch.manual_seed(42)
 
 def data_preparation():
     size = 128
@@ -18,7 +19,7 @@ def data_preparation():
                                         transforms.ToTensor()])
 
     batch_size = 64
-    trainset = Hotdog_NotHotdog(train=True, transform=train_transform)#, data_path='dtu/datasets1/02514/hotdog_nothotdog/')
+    trainset = Hotdog_NotHotdog(train=True, transform=train_transform)#), data_path='dtu/datasets1/02514/hotdog_nothotdog/')
     train_loader = DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=3)
     testset = Hotdog_NotHotdog(train=False, transform=test_transform)#, data_path='dtu/datasets1/02514/hotdog_nothotdog/')
     test_loader = DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=3)
@@ -60,12 +61,12 @@ if __name__ == "__main__":
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     print(f"Running on {device}")
     
-    model = ConvNet().to(device)
+    model = VGG(input_channels=3, num_classes=2).to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.005)
     
     loss_func = nn.NLLLoss()
 
-    for epoch in range(1, 5+1):
+    for epoch in range(1, 0+1):
         train(model, loss_func, train_loader, optimizer, epoch, device)
 
     predictions, agg_labels = [], []
