@@ -1,9 +1,10 @@
 To run the code on DTU HPC follow this steps:
 
 - connect to HPC
-- clone this repository in it
+- clone this repository in it and move to the right folder
     ```console
     git clone https://github.com/marcoplacenti/DeepLearning-in-ComputerVision.git
+    cd DeepLearning-in-ComputerVision/project-1.1
     ```
 - load the python module
     ```console
