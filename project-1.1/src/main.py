@@ -67,7 +67,7 @@ def data_preparation():
     
     return train_dataset, testset
 
-def train(model, loss_func, train_loader, optimizer, epoch, device):
+def train(model, loss_func, train_loader, optimizer, epoch, device, log_softmax):
     agg_labels, predictions = [], []
     for batch_idx, (data, labels) in enumerate(train_loader):
         data, labels = data.to(device), labels.to(device)
@@ -76,17 +76,20 @@ def train(model, loss_func, train_loader, optimizer, epoch, device):
         optimizer.zero_grad()
         output = model(data)
 
-        loss = loss_func(output, labels.unsqueeze(1).to(torch.float32).to(device))
+        loss = loss_func(output.to(device), labels.unsqueeze(1).to(torch.float32).to(device))
 
         loss.backward()
         optimizer.step()
 
         agg_labels.extend(labels.cpu().detach().numpy())
-        predictions.extend(torch.exp(output).cpu().detach().numpy())
+        if log_softmax:
+            predictions.extend(torch.exp(output).cpu().detach().numpy())
+        else:
+            predictions.extend(output.cpu().detach().numpy())
         if batch_idx % 20 == 0:
             print(f"Epoch {epoch} Iteration {batch_idx}/{len(train_loader)}: Loss = {loss}")
 
-def validate(model, loss_func, val_loader, optimizer, device):
+def validate(model, loss_func, val_loader, optimizer, device, log_softmax):
     predictions, agg_labels = [], []
     for batch_idx, (data, labels) in enumerate(val_loader):
         data, labels = data.to(device), labels.to(device)
@@ -101,12 +104,15 @@ def validate(model, loss_func, val_loader, optimizer, device):
             print(f"Iteration {batch_idx}/{len(val_loader)}: Loss = {loss}")
 
         agg_labels.extend(labels.cpu().detach().numpy())
-        predictions.extend(torch.exp(preds).cpu().detach().numpy())
+        if log_softmax:
+            predictions.extend(torch.exp(preds).cpu().detach().numpy())
+        else:
+            predictions.extend(preds.cpu().detach().numpy())
 
     accuracy = performance_metrics(predictions, agg_labels, 'fold')
     return model, accuracy
 
-def test(model, test_loader, optimizer):
+def test(model, test_loader, optimizer, log_softmax):
     predictions, agg_labels = [], []
     for batch_idx, (data, labels) in enumerate(test_loader):
         data, labels = data.to(device), labels.to(device)
@@ -121,9 +127,11 @@ def test(model, test_loader, optimizer):
             print(f"Iteration {batch_idx}/{len(test_loader)}: Loss = {loss}")
 
         agg_labels.extend(labels.cpu().detach().numpy())
-        predictions.extend(torch.exp(preds).cpu().detach().numpy())
-    
-    accuracy = performance_metrics(predictions, agg_labels, 'test')
+        if log_softmax:
+            predictions.extend(torch.exp(preds).cpu().detach().numpy())
+        else:
+            predictions.extend(preds.cpu().detach().numpy())
+    _ = performance_metrics(predictions, agg_labels, 'test')
 
 def performance_metrics(predictions, labels, fold):
     outcome = np.argmax(predictions, axis=1)
@@ -163,18 +171,23 @@ if __name__ == "__main__":
     
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     print(f"Running on {device}")
+
+    loss_func = nn.BCELoss() #loss_func = nn.NLLLoss()
+    if isinstance(loss_func, nn.BCELoss()):
+        log_softmax = False
+    elif isinstance(loss_func, nn.NLLLoss()):
+        log_softmax = True
     
     if CROSS_VALIDATION:
         models_accuracies = {}
         for i, train_loader in enumerate(trainloaders_list):
             model = Network()
             optimizer = optim.Adam(model.parameters(), lr=LR)
-            loss_func = nn.BCELoss() #loss_func = nn.NLLLoss()
-            
+        
             for epoch in range(1, EPOCHS):
-                train(model, loss_func, train_loader, optimizer, epoch, device)
+                train(model, loss_func, train_loader, optimizer, epoch, device, log_softmax)
             
-            kf_model, accuracy = validate(model, loss_func, valloaders_list[i], optimizer, device)
+            kf_model, accuracy = validate(model, loss_func, valloaders_list[i], optimizer, device, log_softmax)
             models_accuracies[accuracy] = kf_model
 
             final_model = [models_accuracies[key] for key in sorted(models_accuracies.keys(), reverse=True)]
@@ -183,9 +196,9 @@ if __name__ == "__main__":
         optimizer = optim.Adam(final_model.parameters(), lr=LR)
         loss_func = nn.NLLLoss()
         for epoch in range(1, EPOCHS):
-            train(final_model, loss_func, trainloaders_list, optimizer, epoch, device)
+            train(final_model, loss_func, trainloaders_list, optimizer, epoch, device, log_softmax)
 
-    test(final_model, test_loader, optimizer)
+    test(final_model, test_loader, optimizer, log_softmax)
 
     print("Saving model weights and optimizer...")
     torch.save(final_model.state_dict(), './models/model_final.pt')
