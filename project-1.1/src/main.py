@@ -11,6 +11,8 @@ from sklearn.model_selection import KFold
 from data.data_prep import Hotdog_NotHotdog
 from models.architectures import *
 
+torch.cuda.empty_cache()
+
 torch.manual_seed(42)
 np.random.seed(77)
 
