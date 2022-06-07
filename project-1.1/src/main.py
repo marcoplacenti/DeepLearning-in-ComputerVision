@@ -208,7 +208,7 @@ if __name__ == "__main__":
             kf_model, accuracy = validate(model, loss_func, valloaders_list[i], optimizer, device, log_softmax)
             models_accuracies[accuracy] = kf_model
 
-            final_model = [models_accuracies[key] for key in sorted(models_accuracies.keys(), reverse=True)]
+            final_model = [models_accuracies[key] for key in sorted(models_accuracies.keys(), reverse=True)][0]
     else:
         final_model = VGG(3, 2).to(device)
         optimizer = optim.Adam(final_model.parameters(), lr=LR)
