@@ -2,34 +2,80 @@ import torch
 import torch.optim as optim
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
+import torch.nn.functional as F
 
 import numpy as np
 from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import KFold
 
 from data.data_prep import Hotdog_NotHotdog
 from models.architectures import *
 
+torch.cuda.empty_cache()
+
 torch.manual_seed(42)
+np.random.seed(77)
+
+IMG_RESOLUTION = 128
+
+CROSS_VALIDATION = True
+K_SPLITS = 5
+
+DATA_AUGMENTATION = True
+
+EPOCHS = 2
+LR = 0.005
+BATCH_SIZE = 64
+
 
 def data_preparation():
-    size = 128
-    train_transform = transforms.Compose([transforms.Resize((size, size)), 
-                                        transforms.ToTensor()])
-    test_transform = transforms.Compose([transforms.Resize((size, size)), 
-                                        transforms.ToTensor()])
-
-    batch_size = 64
-    trainset = Hotdog_NotHotdog(train=True, transform=train_transform)#), data_path='dtu/datasets1/02514/hotdog_nothotdog/')
-    train_loader = DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=3)
-    testset = Hotdog_NotHotdog(train=False, transform=test_transform)#, data_path='dtu/datasets1/02514/hotdog_nothotdog/')
-    test_loader = DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=3)
-
-    return trainset, train_loader, testset, test_loader
-
-def train(model, loss_func, train_loader, optimizer, epoch, device):
     
+    train_transform = transforms.Compose([transforms.Resize((IMG_RESOLUTION, IMG_RESOLUTION)), 
+                                        transforms.ToTensor()])
+    train_dataset = Hotdog_NotHotdog(train=True, transform=train_transform)#, data_path='dtu/datasets1/02514/hotdog_nothotdog/')
+    
+    test_transform = transforms.Compose([transforms.Resize((IMG_RESOLUTION, IMG_RESOLUTION)), 
+                                        transforms.ToTensor()])
+    testset = Hotdog_NotHotdog(train=False, transform=test_transform)#, data_path='dtu/datasets1/02514/hotdog_nothotdog/')
+
+    if DATA_AUGMENTATION:
+        train_transforms_1 = transforms.Compose([transforms.Resize((IMG_RESOLUTION, IMG_RESOLUTION)),
+                                            transforms.RandomRotation((90,90)),
+                                            transforms.ToTensor(),
+                                            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+        train_transforms_2 = transforms.Compose([transforms.Resize((IMG_RESOLUTION, IMG_RESOLUTION)),
+                                                transforms.RandomRotation((180,180)),
+                                                transforms.ToTensor(),
+                                                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+        train_transforms_3 = transforms.Compose([transforms.Resize((IMG_RESOLUTION, IMG_RESOLUTION)),
+                                                transforms.RandomRotation((270,270)),
+                                                transforms.ToTensor(),
+                                                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+        train_transforms_4 = transforms.Compose([transforms.Resize((IMG_RESOLUTION, IMG_RESOLUTION)),
+                                                transforms.RandomHorizontalFlip(p=1.0),
+                                                transforms.ToTensor(),
+                                                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+        train_transforms_5 = transforms.Compose([transforms.Resize((IMG_RESOLUTION, IMG_RESOLUTION)),
+                                                transforms.RandomCrop(size=(IMG_RESOLUTION, IMG_RESOLUTION)),
+                                                transforms.ToTensor(),
+                                                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+
+        trainset_1 = Hotdog_NotHotdog(train=True, transform=train_transforms_1)
+        trainset_2 = Hotdog_NotHotdog(train=True, transform=train_transforms_2)
+        trainset_3 = Hotdog_NotHotdog(train=True, transform=train_transforms_3)
+        trainset_4 = Hotdog_NotHotdog(train=True, transform=train_transforms_4)
+        trainset_5 = Hotdog_NotHotdog(train=True, transform=train_transforms_5)
+        train_dataset = torch.utils.data.ConcatDataset([train_dataset, trainset_1, trainset_2, trainset_3, trainset_4, trainset_5])
+    
+    return train_dataset, testset
+
+def train(model, loss_func, train_loader, optimizer, epoch, device, log_softmax):
+    agg_labels, predictions = [], []
     for batch_idx, (data, labels) in enumerate(train_loader):
         data, labels = data.to(device), labels.to(device)
+
+        if not log_softmax:
+            labels = labels.reshape(-1,1).to(torch.float32).to(device)
 
         model.train()
         optimizer.zero_grad()
@@ -39,39 +85,24 @@ def train(model, loss_func, train_loader, optimizer, epoch, device):
 
         loss.backward()
         optimizer.step()
+
+        agg_labels.extend(labels.cpu().detach().numpy())
+        if log_softmax:
+            predictions.extend(torch.exp(output).cpu().detach().numpy())
+        else:
+            predictions.extend(output.cpu().detach().numpy())
         if batch_idx % 20 == 0:
             print(f"Epoch {epoch} Iteration {batch_idx}/{len(train_loader)}: Loss = {loss}")
 
-def performance_metrics(predictions, labels):
-    outcome = np.argmax(predictions, axis=1)
+    _ = performance_metrics(predictions, agg_labels, 'train')
 
-    print(confusion_matrix(labels, outcome))
-
-    test_accuracy =  np.sum([1 if item == labels[idx] else 0 for idx, item in enumerate(outcome)])/len(outcome)
-
-
-
-    print(f"\nTest Accuracy: {round(test_accuracy,3)}\n")
-
-
-if __name__ == "__main__":
-
-    trainset, train_loader, testset, test_loader = data_preparation()
-
-    device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-    print(f"Running on {device}")
-    
-    model = VGG(input_channels=3, num_classes=2).to(device)
-    optimizer = optim.Adam(model.parameters(), lr=0.005)
-    
-    loss_func = nn.NLLLoss()
-
-    for epoch in range(1, 0+1):
-        train(model, loss_func, train_loader, optimizer, epoch, device)
-
+def validate(model, loss_func, val_loader, optimizer, device, log_softmax):
     predictions, agg_labels = [], []
-    for batch_idx, (data, labels) in enumerate(test_loader):
+    for batch_idx, (data, labels) in enumerate(val_loader):
         data, labels = data.to(device), labels.to(device)
+
+        if not log_softmax:
+            labels = labels.reshape(-1,1).to(torch.float32).to(device)
         
         model.eval()
         optimizer.zero_grad()
@@ -80,13 +111,117 @@ if __name__ == "__main__":
         loss = loss_func(preds, labels)
 
         if batch_idx % 20 == 0:
+            print(f"Iteration {batch_idx}/{len(val_loader)}: Loss = {loss}")
+
+        agg_labels.extend(labels.cpu().detach().numpy())
+        if log_softmax:
+            predictions.extend(torch.exp(preds).cpu().detach().numpy())
+        else:
+            predictions.extend(preds.cpu().detach().numpy())
+
+    accuracy = performance_metrics(predictions, agg_labels, 'fold')
+    return model, accuracy
+
+def test(model, loss_func, test_loader, optimizer, device, log_softmax):
+    predictions, agg_labels = [], []
+    for batch_idx, (data, labels) in enumerate(test_loader):
+        data, labels = data.to(device), labels.to(device)
+
+        if not log_softmax:
+            labels = labels.reshape(-1,1).to(torch.float32).to(device)
+        
+        model.eval()
+        optimizer.zero_grad()
+        preds = model(data)
+
+        save_samples(data, labels, preds)
+
+        loss = loss_func(preds, labels)
+
+        if batch_idx % 20 == 0:
             print(f"Iteration {batch_idx}/{len(test_loader)}: Loss = {loss}")
 
         agg_labels.extend(labels.cpu().detach().numpy())
-        predictions.extend(torch.exp(preds).cpu().detach().numpy())
+        if log_softmax:
+            predictions.extend(torch.exp(preds).cpu().detach().numpy())
+        else:
+            predictions.extend(preds.cpu().detach().numpy())
+
+    _ = performance_metrics(predictions, agg_labels, 'test')
+
+def performance_metrics(predictions, labels, fold):
+    outcome = np.argmax(predictions, axis=1)
+    print(confusion_matrix(labels, outcome))
+    test_accuracy =  np.sum([1 if item == labels[idx] else 0 for idx, item in enumerate(outcome)])/len(outcome)
+    print(f"\n{fold} accuracy: {round(test_accuracy,3)}\n")
+    return test_accuracy
+
+def save_samples(data, labels, preds):
+    pass
+
+
+if __name__ == "__main__":
+
+    train_dataset, testset = data_preparation()
+
+    trainloaders_list, valloaders_list = [], []
+    if CROSS_VALIDATION:
+        kfold = KFold(n_splits=K_SPLITS, shuffle=False)
+        for (train_ids, val_ids) in kfold.split(train_dataset):
+            train_subsampler = torch.utils.data.SubsetRandomSampler(train_ids)
+            val_subsampler = torch.utils.data.SubsetRandomSampler(val_ids)
+
+            trainloaders_list.append(torch.utils.data.DataLoader(
+                            train_dataset, 
+                            batch_size=BATCH_SIZE,
+                            sampler=train_subsampler,
+                            num_workers=3))
+
+            valloaders_list.append(torch.utils.data.DataLoader(
+                            train_dataset,
+                            batch_size=BATCH_SIZE,
+                            sampler=val_subsampler,
+                            num_workers=3))
+
+    else:
+        trainloaders_list.append(DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=3))
+        
+    test_loader = DataLoader(testset, batch_size=BATCH_SIZE, shuffle=False, num_workers=3)
     
-    performance_metrics(predictions, agg_labels)
+    device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
+    print(f"Running on {device}")
+
+    loss_func = nn.BCELoss() 
+    #loss_func = nn.NLLLoss()
+    if isinstance(loss_func, nn.BCELoss):
+        log_softmax = False
+    elif isinstance(loss_func, nn.NLLLoss):
+        log_softmax = True
+    
+    if CROSS_VALIDATION:
+        models_accuracies = {}
+        for i, train_loader in enumerate(trainloaders_list):
+            #model = VGG(3, 2).to(device)
+            model = Network().to(device)
+            optimizer = optim.Adam(model.parameters(), lr=LR)
+        
+            for epoch in range(1, EPOCHS):
+                train(model, loss_func, train_loader, optimizer, epoch, device, log_softmax)
+            
+            kf_model, accuracy = validate(model, loss_func, valloaders_list[i], optimizer, device, log_softmax)
+            models_accuracies[accuracy] = kf_model
+
+            final_model = [models_accuracies[key] for key in sorted(models_accuracies.keys(), reverse=True)][0]
+
+    else:
+        #final_model = VGG(3, 2).to(device)
+        final_model = Network().to(device)
+        optimizer = optim.Adam(final_model.parameters(), lr=LR)
+        for epoch in range(1, EPOCHS):
+            train(final_model, loss_func, trainloaders_list, optimizer, epoch, device, log_softmax)
+
+    test(final_model, loss_func, test_loader, optimizer, device, log_softmax)
 
     print("Saving model weights and optimizer...")
-    torch.save(model.state_dict(), './models/model_final.pt')
+    torch.save(final_model.state_dict(), './models/model_final.pt')
     torch.save(optimizer.state_dict(), './models/optim_final.pt')
