@@ -94,6 +94,8 @@ def train(model, loss_func, train_loader, optimizer, epoch, device, log_softmax)
         if batch_idx % 20 == 0:
             print(f"Epoch {epoch} Iteration {batch_idx}/{len(train_loader)}: Loss = {loss}")
 
+    _ = performance_metrics(predictions, agg_labels, 'train')
+
 def validate(model, loss_func, val_loader, optimizer, device, log_softmax):
     predictions, agg_labels = [], []
     for batch_idx, (data, labels) in enumerate(val_loader):
@@ -209,6 +211,7 @@ if __name__ == "__main__":
             models_accuracies[accuracy] = kf_model
 
             final_model = [models_accuracies[key] for key in sorted(models_accuracies.keys(), reverse=True)][0]
+
     else:
         final_model = VGG(3, 2).to(device)
         optimizer = optim.Adam(final_model.parameters(), lr=LR)
