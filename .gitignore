@@ -131,3 +131,6 @@ dmypy.json
 */bin/
 include/
 pyvenv.cfg
+
+models/
+dtu/
