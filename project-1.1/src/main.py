@@ -74,11 +74,14 @@ def train(model, loss_func, train_loader, optimizer, epoch, device, log_softmax)
     for batch_idx, (data, labels) in enumerate(train_loader):
         data, labels = data.to(device), labels.to(device)
 
+        if not log_softmax:
+            labels = labels.unsqueeze().to(torch.float32).to(device)
+
         model.train()
         optimizer.zero_grad()
         output = model(data)
 
-        loss = loss_func(output, labels.unsqueeze(1).to(torch.float32).to(device))
+        loss = loss_func(output, labels)
 
         loss.backward()
         optimizer.step()
@@ -95,6 +98,9 @@ def validate(model, loss_func, val_loader, optimizer, device, log_softmax):
     predictions, agg_labels = [], []
     for batch_idx, (data, labels) in enumerate(val_loader):
         data, labels = data.to(device), labels.to(device)
+
+        if not log_softmax:
+            labels = labels.unsqueeze().to(torch.float32).to(device)
         
         model.eval()
         optimizer.zero_grad()
@@ -118,6 +124,9 @@ def test(model, loss_func, test_loader, optimizer, device, log_softmax):
     predictions, agg_labels = [], []
     for batch_idx, (data, labels) in enumerate(test_loader):
         data, labels = data.to(device), labels.to(device)
+
+        if not log_softmax:
+            labels = labels.unsqueeze().to(torch.float32).to(device)
         
         model.eval()
         optimizer.zero_grad()
