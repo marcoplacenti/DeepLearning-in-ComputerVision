@@ -173,9 +173,9 @@ if __name__ == "__main__":
     print(f"Running on {device}")
 
     loss_func = nn.BCELoss() #loss_func = nn.NLLLoss()
-    if isinstance(loss_func, nn.BCELoss()):
+    if isinstance(loss_func, nn.BCELoss):
         log_softmax = False
-    elif isinstance(loss_func, nn.NLLLoss()):
+    elif isinstance(loss_func, nn.NLLLoss):
         log_softmax = True
     
     if CROSS_VALIDATION:
