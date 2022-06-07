@@ -21,7 +21,7 @@ IMG_RESOLUTION = 128
 CROSS_VALIDATION = True
 K_SPLITS = 5
 
-DATA_AUGMMENTATION = True
+DATA_AUGMENTATION = True
 
 EPOCHS = 2
 LR = 0.005
@@ -38,7 +38,7 @@ def data_preparation():
                                         transforms.ToTensor()])
     testset = Hotdog_NotHotdog(train=False, transform=test_transform)#, data_path='dtu/datasets1/02514/hotdog_nothotdog/')
 
-    if DATA_AUGMMENTATION:
+    if DATA_AUGMENTATION:
         train_transforms_1 = transforms.Compose([transforms.Resize((IMG_RESOLUTION, IMG_RESOLUTION)),
                                             transforms.RandomRotation((90,90)),
                                             transforms.ToTensor(),
@@ -75,7 +75,7 @@ def train(model, loss_func, train_loader, optimizer, epoch, device, log_softmax)
         data, labels = data.to(device), labels.to(device)
 
         if not log_softmax:
-            labels = labels.unsqueeze().to(torch.float32).to(device)
+            labels = labels.unsqueeze(1).to(torch.float32).to(device)
 
         model.train()
         optimizer.zero_grad()
@@ -102,7 +102,7 @@ def validate(model, loss_func, val_loader, optimizer, device, log_softmax):
         data, labels = data.to(device), labels.to(device)
 
         if not log_softmax:
-            labels = labels.unsqueeze().to(torch.float32).to(device)
+            labels = labels.unsqueeze(1).to(torch.float32).to(device)
         
         model.eval()
         optimizer.zero_grad()
@@ -128,7 +128,7 @@ def test(model, loss_func, test_loader, optimizer, device, log_softmax):
         data, labels = data.to(device), labels.to(device)
 
         if not log_softmax:
-            labels = labels.unsqueeze().to(torch.float32).to(device)
+            labels = labels.unsqueeze(1).to(torch.float32).to(device)
         
         model.eval()
         optimizer.zero_grad()
@@ -191,8 +191,8 @@ if __name__ == "__main__":
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     print(f"Running on {device}")
 
-    #loss_func = nn.BCELoss() 
-    loss_func = nn.NLLLoss()
+    loss_func = nn.BCELoss() 
+    #loss_func = nn.NLLLoss()
     if isinstance(loss_func, nn.BCELoss):
         log_softmax = False
     elif isinstance(loss_func, nn.NLLLoss):
@@ -201,7 +201,8 @@ if __name__ == "__main__":
     if CROSS_VALIDATION:
         models_accuracies = {}
         for i, train_loader in enumerate(trainloaders_list):
-            model = VGG(3, 2).to(device)
+            #model = VGG(3, 2).to(device)
+            model = Network().to(device)
             optimizer = optim.Adam(model.parameters(), lr=LR)
         
             for epoch in range(1, EPOCHS):
@@ -213,7 +214,8 @@ if __name__ == "__main__":
             final_model = [models_accuracies[key] for key in sorted(models_accuracies.keys(), reverse=True)][0]
 
     else:
-        final_model = VGG(3, 2).to(device)
+        #final_model = VGG(3, 2).to(device)
+        final_model = Network().to(device)
         optimizer = optim.Adam(final_model.parameters(), lr=LR)
         for epoch in range(1, EPOCHS):
             train(final_model, loss_func, trainloaders_list, optimizer, epoch, device, log_softmax)
