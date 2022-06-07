@@ -181,7 +181,7 @@ if __name__ == "__main__":
     if CROSS_VALIDATION:
         models_accuracies = {}
         for i, train_loader in enumerate(trainloaders_list):
-            model = Network()
+            model = Network().to(device)
             optimizer = optim.Adam(model.parameters(), lr=LR)
         
             for epoch in range(1, EPOCHS):
@@ -192,7 +192,7 @@ if __name__ == "__main__":
 
             final_model = [models_accuracies[key] for key in sorted(models_accuracies.keys(), reverse=True)]
     else:
-        final_model = Network()
+        final_model = Network().to(device)
         optimizer = optim.Adam(final_model.parameters(), lr=LR)
         loss_func = nn.NLLLoss()
         for epoch in range(1, EPOCHS):
