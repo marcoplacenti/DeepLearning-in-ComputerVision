@@ -114,7 +114,7 @@ def validate(model, loss_func, val_loader, optimizer, device, log_softmax):
     accuracy = performance_metrics(predictions, agg_labels, 'fold')
     return model, accuracy
 
-def test(model, test_loader, optimizer, log_softmax):
+def test(model, loss_func, test_loader, optimizer, device, log_softmax):
     predictions, agg_labels = [], []
     for batch_idx, (data, labels) in enumerate(test_loader):
         data, labels = data.to(device), labels.to(device)
@@ -122,6 +122,8 @@ def test(model, test_loader, optimizer, log_softmax):
         model.eval()
         optimizer.zero_grad()
         preds = model(data)
+
+        save_samples(data, labels, preds)
 
         loss = loss_func(preds, labels)
 
@@ -141,6 +143,9 @@ def performance_metrics(predictions, labels, fold):
     test_accuracy =  np.sum([1 if item == labels[idx] else 0 for idx, item in enumerate(outcome)])/len(outcome)
     print(f"\n{fold} accuracy: {round(test_accuracy,3)}\n")
     return test_accuracy
+
+def save_samples(data, labels, preds):
+    pass
 
 
 if __name__ == "__main__":
@@ -200,7 +205,7 @@ if __name__ == "__main__":
         for epoch in range(1, EPOCHS):
             train(final_model, loss_func, trainloaders_list, optimizer, epoch, device, log_softmax)
 
-    test(final_model, test_loader, optimizer, log_softmax)
+    test(final_model, loss_func, test_loader, optimizer, device, log_softmax)
 
     print("Saving model weights and optimizer...")
     torch.save(final_model.state_dict(), './models/model_final.pt')
