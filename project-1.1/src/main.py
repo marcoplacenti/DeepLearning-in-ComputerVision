@@ -100,7 +100,7 @@ def validate(model, loss_func, val_loader, optimizer, device, log_softmax):
         optimizer.zero_grad()
         preds = model(data)
 
-        loss = loss_func(preds, labels)
+        loss = loss_func(preds.to(device), labels.unsqueeze(1).to(torch.float32).to(device))
 
         if batch_idx % 20 == 0:
             print(f"Iteration {batch_idx}/{len(val_loader)}: Loss = {loss}")
@@ -125,7 +125,7 @@ def test(model, loss_func, test_loader, optimizer, device, log_softmax):
 
         save_samples(data, labels, preds)
 
-        loss = loss_func(preds, labels)
+        loss = loss_func(preds.to(device), labels.unsqueeze(1).to(torch.float32).to(device))
 
         if batch_idx % 20 == 0:
             print(f"Iteration {batch_idx}/{len(test_loader)}: Loss = {loss}")
@@ -201,7 +201,6 @@ if __name__ == "__main__":
     else:
         final_model = Network().to(device)
         optimizer = optim.Adam(final_model.parameters(), lr=LR)
-        loss_func = nn.NLLLoss()
         for epoch in range(1, EPOCHS):
             train(final_model, loss_func, trainloaders_list, optimizer, epoch, device, log_softmax)
 
