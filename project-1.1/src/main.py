@@ -93,7 +93,7 @@ if __name__ == "__main__":
     
     loss_func = nn.NLLLoss()
 
-    for epoch in range(1, 0+1):
+    for epoch in range(1, 25+1):
         train(model, loss_func, train_loader, optimizer, epoch, device)
 
     predictions, agg_labels = [], []
