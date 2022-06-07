@@ -18,9 +18,38 @@ def data_preparation():
     test_transform = transforms.Compose([transforms.Resize((size, size)), 
                                         transforms.ToTensor()])
 
+    train_transforms_1 = transforms.Compose([transforms.Resize((size, size)),
+                                         transforms.RandomRotation((90,90)),
+                                         transforms.ToTensor(),
+                                        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+    train_transforms_2 = transforms.Compose([transforms.Resize((size, size)),
+                                            transforms.RandomRotation((180,180)),
+                                            transforms.ToTensor(),
+                                            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+    train_transforms_3 = transforms.Compose([transforms.Resize((size, size)),
+                                            transforms.RandomRotation((270,270)),
+                                            transforms.ToTensor(),
+                                            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+    train_transforms_4 = transforms.Compose([transforms.Resize((size, size)),
+                                            transforms.RandomHorizontalFlip(p=1.0),
+                                            transforms.ToTensor(),
+                                            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+    train_transforms_5 = transforms.Compose([transforms.Resize((size, size)),
+                                            transforms.RandomCrop(size=(128, 128)),
+                                            transforms.ToTensor(),
+                                            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+
     batch_size = 64
+    
     trainset = Hotdog_NotHotdog(train=True, transform=train_transform)#), data_path='dtu/datasets1/02514/hotdog_nothotdog/')
-    train_loader = DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=3)
+    trainset_1 = Hotdog_NotHotdog(train=True, transform=train_transforms_1)
+    trainset_2 = Hotdog_NotHotdog(train=True, transform=train_transforms_2)
+    trainset_3 = Hotdog_NotHotdog(train=True, transform=train_transforms_3)
+    trainset_4 = Hotdog_NotHotdog(train=True, transform=train_transforms_4)
+    trainset_5 = Hotdog_NotHotdog(train=True, transform=train_transforms_5)
+    concat_dataset = torch.utils.data.ConcatDataset([trainset, trainset_1, trainset_2, trainset_3, trainset_4, trainset_5])
+    
+    train_loader = DataLoader(concat_dataset, batch_size=batch_size, shuffle=True, num_workers=3)
     testset = Hotdog_NotHotdog(train=False, transform=test_transform)#, data_path='dtu/datasets1/02514/hotdog_nothotdog/')
     test_loader = DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=3)
 
@@ -48,8 +77,6 @@ def performance_metrics(predictions, labels):
     print(confusion_matrix(labels, outcome))
 
     test_accuracy =  np.sum([1 if item == labels[idx] else 0 for idx, item in enumerate(outcome)])/len(outcome)
-
-
 
     print(f"\nTest Accuracy: {round(test_accuracy,3)}\n")
 
