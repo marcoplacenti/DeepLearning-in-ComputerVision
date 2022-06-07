@@ -78,7 +78,7 @@ def train(model, loss_func, train_loader, optimizer, epoch, device, log_softmax)
         optimizer.zero_grad()
         output = model(data)
 
-        loss = loss_func(output.to(device), labels.unsqueeze(1).to(torch.float32).to(device))
+        loss = loss_func(output, labels.unsqueeze(1).to(torch.float32).to(device))
 
         loss.backward()
         optimizer.step()
@@ -100,7 +100,7 @@ def validate(model, loss_func, val_loader, optimizer, device, log_softmax):
         optimizer.zero_grad()
         preds = model(data)
 
-        loss = loss_func(preds.to(device), labels.unsqueeze(1).to(torch.float32).to(device))
+        loss = loss_func(preds, labels.unsqueeze(1).to(torch.float32).to(device))
 
         if batch_idx % 20 == 0:
             print(f"Iteration {batch_idx}/{len(val_loader)}: Loss = {loss}")
@@ -125,7 +125,7 @@ def test(model, loss_func, test_loader, optimizer, device, log_softmax):
 
         save_samples(data, labels, preds)
 
-        loss = loss_func(preds.to(device), labels.unsqueeze(1).to(torch.float32).to(device))
+        loss = loss_func(preds, labels.unsqueeze(1).to(torch.float32).to(device))
 
         if batch_idx % 20 == 0:
             print(f"Iteration {batch_idx}/{len(test_loader)}: Loss = {loss}")
@@ -135,6 +135,7 @@ def test(model, loss_func, test_loader, optimizer, device, log_softmax):
             predictions.extend(torch.exp(preds).cpu().detach().numpy())
         else:
             predictions.extend(preds.cpu().detach().numpy())
+
     _ = performance_metrics(predictions, agg_labels, 'test')
 
 def performance_metrics(predictions, labels, fold):
@@ -179,7 +180,8 @@ if __name__ == "__main__":
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     print(f"Running on {device}")
 
-    loss_func = nn.BCELoss() #loss_func = nn.NLLLoss()
+    #loss_func = nn.BCELoss() 
+    loss_func = nn.NLLLoss()
     if isinstance(loss_func, nn.BCELoss):
         log_softmax = False
     elif isinstance(loss_func, nn.NLLLoss):
@@ -188,7 +190,7 @@ if __name__ == "__main__":
     if CROSS_VALIDATION:
         models_accuracies = {}
         for i, train_loader in enumerate(trainloaders_list):
-            model = Network().to(device)
+            model = VGG(3, 2).to(device)
             optimizer = optim.Adam(model.parameters(), lr=LR)
         
             for epoch in range(1, EPOCHS):
@@ -199,7 +201,7 @@ if __name__ == "__main__":
 
             final_model = [models_accuracies[key] for key in sorted(models_accuracies.keys(), reverse=True)]
     else:
-        final_model = Network().to(device)
+        final_model = VGG(3, 2).to(device)
         optimizer = optim.Adam(final_model.parameters(), lr=LR)
         for epoch in range(1, EPOCHS):
             train(final_model, loss_func, trainloaders_list, optimizer, epoch, device, log_softmax)
