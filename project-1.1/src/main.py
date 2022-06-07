@@ -75,7 +75,7 @@ def train(model, loss_func, train_loader, optimizer, epoch, device, log_softmax)
         data, labels = data.to(device), labels.to(device)
 
         if not log_softmax:
-            labels = labels.unsqueeze(1).to(torch.float32).to(device)
+            labels = labels.to(torch.float32).to(device)
 
         model.train()
         optimizer.zero_grad()
@@ -102,7 +102,7 @@ def validate(model, loss_func, val_loader, optimizer, device, log_softmax):
         data, labels = data.to(device), labels.to(device)
 
         if not log_softmax:
-            labels = labels.unsqueeze(1).to(torch.float32).to(device)
+            labels = labels.to(torch.float32).to(device)
         
         model.eval()
         optimizer.zero_grad()
@@ -128,7 +128,7 @@ def test(model, loss_func, test_loader, optimizer, device, log_softmax):
         data, labels = data.to(device), labels.to(device)
 
         if not log_softmax:
-            labels = labels.unsqueeze(1).to(torch.float32).to(device)
+            labels = labels.to(torch.float32).to(device)
         
         model.eval()
         optimizer.zero_grad()
