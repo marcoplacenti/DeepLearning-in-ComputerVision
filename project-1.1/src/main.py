@@ -39,12 +39,12 @@ def data_preparation():
     train_transform = transforms.Compose([transforms.Resize((IMG_RESOLUTION, IMG_RESOLUTION)), 
                                         transforms.ToTensor(),
                                         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
-    train_dataset = Hotdog_NotHotdog(train=True, transform=train_transform, data_path='dtu/datasets1/02514/hotdog_nothotdog/')
+    train_dataset = Hotdog_NotHotdog(train=True, transform=train_transform)#, data_path='dtu/datasets1/02514/hotdog_nothotdog/')
     
     test_transform = transforms.Compose([transforms.Resize((IMG_RESOLUTION, IMG_RESOLUTION)), 
                                         transforms.ToTensor(),
                                         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
-    testset = Hotdog_NotHotdog(train=False, transform=test_transform, data_path='dtu/datasets1/02514/hotdog_nothotdog/')
+    testset = Hotdog_NotHotdog(train=False, transform=test_transform)#, data_path='dtu/datasets1/02514/hotdog_nothotdog/')
 
     if DATA_AUGMENTATION:
         train_transforms_1 = transforms.Compose([transforms.Resize((IMG_RESOLUTION, IMG_RESOLUTION)),
