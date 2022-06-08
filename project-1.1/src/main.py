@@ -5,7 +5,7 @@ import torch.nn as nn
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 import torch.nn.functional as F
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 import numpy as np
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import KFold
@@ -24,7 +24,7 @@ torch.cuda.empty_cache()
 
 IMG_RESOLUTION = 128
 
-CROSS_VALIDATION = False
+CROSS_VALIDATION = True
 K_SPLITS = 5
 
 DATA_AUGMENTATION = True
@@ -39,12 +39,12 @@ def data_preparation():
     train_transform = transforms.Compose([transforms.Resize((IMG_RESOLUTION, IMG_RESOLUTION)), 
                                         transforms.ToTensor(),
                                         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
-    train_dataset = Hotdog_NotHotdog(train=True, transform=train_transform)#, data_path='dtu/datasets1/02514/hotdog_nothotdog/')
+    train_dataset = Hotdog_NotHotdog(train=True, transform=train_transform, data_path='dtu/datasets1/02514/hotdog_nothotdog/')
     
     test_transform = transforms.Compose([transforms.Resize((IMG_RESOLUTION, IMG_RESOLUTION)), 
                                         transforms.ToTensor(),
                                         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
-    testset = Hotdog_NotHotdog(train=False, transform=test_transform)#, data_path='dtu/datasets1/02514/hotdog_nothotdog/')
+    testset = Hotdog_NotHotdog(train=False, transform=test_transform, data_path='dtu/datasets1/02514/hotdog_nothotdog/')
 
     if DATA_AUGMENTATION:
         train_transforms_1 = transforms.Compose([transforms.Resize((IMG_RESOLUTION, IMG_RESOLUTION)),
@@ -236,7 +236,7 @@ if __name__ == "__main__":
 
     trainloaders_list, valloaders_list = [], []
     if CROSS_VALIDATION:
-        kfold = KFold(n_splits=K_SPLITS, shuffle=False)
+        kfold = KFold(n_splits=K_SPLITS, shuffle=True)
         for (train_ids, val_ids) in kfold.split(train_dataset_conc):
             train_subsampler = torch.utils.data.SubsetRandomSampler(train_ids)
             val_subsampler = torch.utils.data.SubsetRandomSampler(val_ids)
