@@ -17,7 +17,7 @@ def process_image(file, data_dir, batch_idx):
     data_dir.split('/')[2]
     np.save(f"./data/proposals/{batch_idx}/{file.split('.')[0]}", boxes)
 
-
+    
     """
     patches = []
     for box in boxes:
