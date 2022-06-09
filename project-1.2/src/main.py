@@ -1,15 +1,13 @@
 import numpy as np
 import os
-import glob
 import cv2
 
-import skimage.io
 from selective_search import selective_search
 
 if __name__ == '__main__':
 
-    for batch in range(1, 15):
-        data_dir = glob.glob(f'/dtu/datasets1/02514/data_wastedetection/batch_{batch}/')
+    for batch in range(15):
+        data_dir = f'.data/batch_{batch+1}/'
         
         if not os.path.exists('./data/proposals/'):
             os.makedirs('./data/proposals/')
