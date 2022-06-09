@@ -8,13 +8,14 @@ from tqdm import tqdm
 from selective_search import selective_search
 
 
-def process_image(file, data_dir):
+def process_image(file, data_dir, batch_idx):
     print(f"Processing {file}...")
     image = cv2.imread(data_dir+file)
     image = cv2.resize(image, (224, 224))
     
     boxes = np.array(selective_search(image, mode='single', random_sort=False), dtype='object')
-    np.save(f"./data/proposals/{file.split('.')[0]}", boxes)
+    data_dir.split('/')[2]
+    np.save(f"./data/proposals/{batch_idx}/{file.split('.')[0]}", boxes)
 
 
     """
@@ -38,9 +39,12 @@ if __name__ == '__main__':
         if not os.path.exists('./data/proposals/'):
             os.makedirs('./data/proposals/')
 
+        if not os.path.exists(f'./data/proposals/{batch+1}/'):
+            os.makedirs(f'./data/proposals/{batch+1}/')
+
         files = os.listdir(data_dir)
         
         with Pool(processes=4) as pool:
-            func = partial(process_image, data_dir=data_dir)
+            func = partial(process_image, data_dir=data_dir, batch_idx=batch+1)
             pool.map(func, files)
                 
