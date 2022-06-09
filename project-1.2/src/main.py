@@ -135,8 +135,8 @@ def process_image(file, data_dir, dataset):
     cropped_resized_images = crop_images_to_proposals(data_dir + file_name, prop, new_image_size=cropped_image_size)
     cropped_resized_images_ground_truth = crop_images_to_proposals(data_dir + file_name,img_annots['bbox'], new_image_size=cropped_image_size)
     
-    data_images = data_images + cropped_resized_images + cropped_resized_images_ground_truth
-    data_labels = data_labels + prop_categories + img_annots['supercategory']
+    #data_images = data_images + cropped_resized_images + cropped_resized_images_ground_truth
+    #data_labels = data_labels + prop_categories + img_annots['supercategory']
 
     """
     print(f"Processing {file}...")
