@@ -126,8 +126,10 @@ def crop_images_to_proposals(filepath, prop, new_image_size):
     
     return cropped_resized_images
 
-def process_image(file, data_dir, dataset):
+data_images = []
+data_labels = []
 
+def process_image(file, data_dir, dataset):
     file_name = file['file_name']
     img_annots = get_image_ground_truth(dataset, file_name)
     prop = get_image_proposals(data_dir + file_name)
@@ -171,9 +173,6 @@ if __name__ == '__main__':
     # Read annotations
     with open(anns_file_path, 'r') as f:
         dataset = json.loads(f.read())
-
-    data_images = []
-    data_labels = []
 
     with Pool(processes=4) as pool:
         func = partial(process_image, data_dir=data_dir, dataset=dataset)
