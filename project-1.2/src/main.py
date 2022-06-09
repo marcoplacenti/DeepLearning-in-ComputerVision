@@ -13,7 +13,7 @@ from selective_search import selective_search
 image_size = 224
 cropped_image_size = 64
 
-def get_image_ground_truth(filename):
+def get_image_ground_truth(dataset, filename):
     #----------------------------------------------
     # Function to find the ground truth annotation for each resized image 
     #----------------------------------------------
@@ -126,7 +126,19 @@ def crop_images_to_proposals(filepath, prop, new_image_size):
     
     return cropped_resized_images
 
-def process_image(file, data_dir, batch_idx):
+def process_image(file, data_dir, dataset):
+
+    file_name = file['file_name']
+    img_annots = get_image_ground_truth(dataset, file_name)
+    prop = get_image_proposals(data_dir + file_name)
+    prop_categories = assign_category_to_proposal(prop, img_annots)
+    cropped_resized_images = crop_images_to_proposals(data_dir + file_name, prop, new_image_size=cropped_image_size)
+    cropped_resized_images_ground_truth = crop_images_to_proposals(data_dir + file_name,img_annots['bbox'], new_image_size=cropped_image_size)
+    
+    data_images = data_images + cropped_resized_images + cropped_resized_images_ground_truth
+    data_labels = data_labels + prop_categories + img_annots['supercategory']
+
+    """
     print(f"Processing {file}...")
     image = cv2.imread(data_dir+file)
     image = cv2.resize(image, (224, 224))
@@ -134,7 +146,7 @@ def process_image(file, data_dir, batch_idx):
     boxes = np.array(selective_search(image, mode='single', random_sort=False), dtype='object')
     data_dir.split('/')[2]
     np.save(f"./data/proposals/{batch_idx}/{file.split('.')[0]}", boxes)
-
+    """
 
     """
     patches = []
@@ -153,6 +165,7 @@ if __name__ == '__main__':
     file_name = 'batch_1/000028.jpg'
 
     data_dir = '/dtu/datasets1/02514/data_wastedetection/'
+    #data_dir = './data/'
     anns_file_path = data_dir + 'annotations.json'
 
     # Read annotations
@@ -162,17 +175,10 @@ if __name__ == '__main__':
     data_images = []
     data_labels = []
 
-    # Create the entire dataset by looping over all images
-    for img in dataset['images']:
-        file_name = img['file_name']
-        img_annots = get_image_ground_truth(file_name)
-        prop = get_image_proposals(data_dir + file_name)
-        prop_categories = assign_category_to_proposal(prop, img_annots)
-        cropped_resized_images = crop_images_to_proposals(data_dir + file_name, prop, new_image_size=cropped_image_size)
-        cropped_resized_images_ground_truth = crop_images_to_proposals(data_dir + file_name,img_annots['bbox'], new_image_size=cropped_image_size)
-        
-        data_images = data_images + cropped_resized_images + cropped_resized_images_ground_truth
-        data_labels = data_labels + prop_categories + img_annots['supercategory']
+    with Pool(processes=4) as pool:
+        func = partial(process_image, data_dir=data_dir, dataset=dataset)
+        pool.map(func, dataset['images'])
+
 
     exit()
     for batch in range(15):
