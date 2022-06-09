@@ -7,6 +7,7 @@ from selective_search import selective_search
 if __name__ == '__main__':
 
     for batch in range(15):
+        print(f"Searching for bounding boxes in batch {batch}...")
         data_dir = f'./data/batch_{batch+1}/'
         
         if not os.path.exists('./data/proposals/'):
