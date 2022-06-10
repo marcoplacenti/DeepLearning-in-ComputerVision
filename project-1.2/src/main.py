@@ -236,7 +236,7 @@ if __name__ == '__main__':
         images = [pair[0] for pair in vals]
         labels = [pair[1] for pair in vals]
     images = np.array(images, dtype='object')
-    joblib.dump(images, './data/split_dataset/test_labels.pkl', compress=True)
+    joblib.dump(images, './data/split_dataset/test_images.pkl', compress=True)
     #np.save('./data/split_dataset/test_images.npy', images)
 
     labels = np.array(labels, dtype='object')
