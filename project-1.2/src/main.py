@@ -251,6 +251,7 @@ if __name__ == '__main__':
         file_names = [pair[2] for pair in vals]
     images = np.array(images, dtype='object')
     for idx, image in enumerate(images):
+        image = np.array(image, dtype='object')
         print(idx, image.shape)
         joblib.dump(image, f'./data/split_dataset/train/train_images_{idx}.pkl', compress=5)
     #np.save('./data/split_dataset/train_images.npy', images)
