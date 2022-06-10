@@ -205,7 +205,7 @@ if __name__ == '__main__':
     if not os.path.exists('./data/split_dataset/test'):
         os.makedirs('./data/split_dataset/test')
     
-    
+    """
     print("Processing validation...")
     with Pool(processes=4) as pool:
         func = partial(process_image, data_dir=data_dir, dataset=dataset)
@@ -221,6 +221,8 @@ if __name__ == '__main__':
     labels = np.array(labels, dtype='object')
     joblib.dump(labels, './data/split_dataset/val/val_labels.pkl', compress=5)
     #np.save('./data/split_dataset/val_labels.npy', labels)
+
+    joblib.dump(np.array(file_names, './data/split_dataset/val_filenames.pkl'), compress=5)
 
     print("Processing testing...")
     with Pool(processes=4) as pool:
@@ -238,6 +240,8 @@ if __name__ == '__main__':
     joblib.dump(labels, './data/split_dataset/test/test_labels.pkl', compress=5)
     #np.save('./data/split_dataset/test_labels.npy', labels)
 
+    joblib.dump(np.array(file_names, './data/split_dataset/test_filenames.pkl'), compress=5)
+    """
     print("Processing training...")
     with Pool(processes=4) as pool:
         func = partial(process_image, data_dir=data_dir, dataset=dataset)
@@ -247,10 +251,13 @@ if __name__ == '__main__':
         file_names = [pair[2] for pair in vals]
     images = np.array(images, dtype='object')
     for idx, image in enumerate(images):
+        print(idx, image.shape)
         joblib.dump(image, f'./data/split_dataset/train/train_images_{idx}.pkl', compress=5)
     #np.save('./data/split_dataset/train_images.npy', images)
 
     labels = np.array(labels, dtype='object')
     joblib.dump(labels, './data/split_dataset/train/train_labels.pkl', compress=5)
     #np.save('./data/split_dataset/train_labels.npy', labels)
+
+    joblib.dump(np.array(file_names, './data/split_dataset/train_filenames.pkl'), compress=5)
                 
