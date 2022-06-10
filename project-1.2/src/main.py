@@ -162,7 +162,7 @@ def process_image(file, data_dir, dataset):
     img = cropped_resized_images + cropped_resized_images_ground_truth
     label = prop_categories + img_annots['supercategory']
 
-    return img, label
+    return img, label, file_name
 
 
 if __name__ == '__main__':
@@ -198,23 +198,28 @@ if __name__ == '__main__':
         elif candidate['id'] in test_dataset_id:
             test_set.append(candidate)
 
-    if not os.path.exists('./data/split_dataset'):
-        os.makedirs('./data/split_dataset')
+    if not os.path.exists('./data/split_dataset/train'):
+        os.makedirs('./data/split_dataset/train')
+    if not os.path.exists('./data/split_dataset/val'):
+        os.makedirs('./data/split_dataset/val')
+    if not os.path.exists('./data/split_dataset/test'):
+        os.makedirs('./data/split_dataset/test')
     
-    """
+    
     print("Processing validation...")
     with Pool(processes=4) as pool:
         func = partial(process_image, data_dir=data_dir, dataset=dataset)
         vals = pool.map(func, val_set)
         images = [pair[0] for pair in vals]
         labels = [pair[1] for pair in vals]
+        file_names = [pair[2] for pair in vals]
     images = np.array(images, dtype='object')
-    for i in range(0, images.shape[0], 50):
-        joblib.dump(images[i:50], f'./data/split_dataset/val_images_{i}.pkl', compress=True)
+    for idx, image in enumerate(images):
+        joblib.dump(image, f'./data/split_dataset/val/val_images_{idx}.pkl', compress=True)
     #np.save('./data/split_dataset/val_images.npy', images)
 
     labels = np.array(labels, dtype='object')
-    joblib.dump(labels, './data/split_dataset/val_labels.pkl', compress=True)
+    joblib.dump(labels, './data/split_dataset/val/val_labels.pkl', compress=True)
     #np.save('./data/split_dataset/val_labels.npy', labels)
 
     print("Processing testing...")
@@ -223,29 +228,29 @@ if __name__ == '__main__':
         vals = pool.map(func, test_set)
         images = [pair[0] for pair in vals]
         labels = [pair[1] for pair in vals]
+        file_names = [pair[2] for pair in vals]
     images = np.array(images, dtype='object')
-    for i in range(0, images.shape[0], 50):
-        joblib.dump(images[i:50], f'./data/split_dataset/test_images_{i}.pkl', compress=True)
+    for idx, image in enumerate(images):
+        joblib.dump(image, f'./data/split_dataset/test/test_images_{idx}.pkl', compress=True)
     #np.save('./data/split_dataset/test_images.npy', images)
 
     labels = np.array(labels, dtype='object')
-    joblib.dump(labels, './data/split_dataset/test_labels.pkl', compress=True)
+    joblib.dump(labels, './data/split_dataset/test/test_labels.pkl', compress=True)
     #np.save('./data/split_dataset/test_labels.npy', labels)
-    """
+
     print("Processing training...")
     with Pool(processes=4) as pool:
         func = partial(process_image, data_dir=data_dir, dataset=dataset)
-        vals = pool.map(func, train_set[0:100])
+        vals = pool.map(func, train_set)
         images = [pair[0] for pair in vals]
-        for pair in vals:
-            print(np.array(pair[0], dtype='object').shape)
         labels = [pair[1] for pair in vals]
+        file_names = [pair[2] for pair in vals]
     images = np.array(images, dtype='object')
-    for i in range(0, images.shape[0], 20):
-        joblib.dump(images[i:20], f'./data/split_dataset/train_images_{i}.pkl', compress=True)
+    for idx, image in enumerate(images):
+        joblib.dump(image, f'./data/split_dataset/train/train_images_{idx}.pkl', compress=True)
     #np.save('./data/split_dataset/train_images.npy', images)
 
     labels = np.array(labels, dtype='object')
-    joblib.dump(labels, './data/split_dataset/train_labels.pkl', compress=True)
+    joblib.dump(labels, './data/split_dataset/train/train_labels.pkl', compress=True)
     #np.save('./data/split_dataset/train_labels.npy', labels)
                 
