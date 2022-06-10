@@ -162,8 +162,8 @@ def process_image(file, data_dir, dataset):
 
 if __name__ == '__main__':
 
-    #data_dir = '/dtu/datasets1/02514/data_wastedetection/'
-    data_dir = './data/'
+    data_dir = '/dtu/datasets1/02514/data_wastedetection/'
+    #data_dir = './data/'
     anns_file_path = data_dir + 'annotations.json'
 
     # Read annotations
