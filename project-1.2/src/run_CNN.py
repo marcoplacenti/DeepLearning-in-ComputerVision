@@ -36,6 +36,26 @@ def data_preparation():
                                         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
     #testset = Hotdog_NotHotdog(train=False, transform=test_transform)#, data_path='dtu/datasets1/02514/hotdog_nothotdog/')
 
+    d = data[0] 
+    labels = data[1]
+    target_back_or_not = []
+    for i in labels:
+        if i == 'background': target_back_or_not.append(0)
+        else: target_back_or_not.append(1)
+    target_back_or_not = np.array(target_back_or_not)
+
+    print('target train 0/1: {}/{}'.format(
+        len(np.where(target_back_or_not == 0)[0]), len(np.where(target_back_or_not == 1)[0])))
+
+    class_sample_count = np.array(
+        [len(np.where(target_back_or_not == t)[0]) for t in np.unique(target_back_or_not)])
+
+    weight = 1. / class_sample_count
+    samples_weight = np.array([weight[t] for t in target_back_or_not])
+    samples_weight = torch.from_numpy(samples_weight)
+    samples_weigth = samples_weight.double()
+    sampler = WeightedRandomSampler(samples_weight, len(samples_weight))
+
     pass
 
 
