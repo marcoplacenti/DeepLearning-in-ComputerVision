@@ -10,6 +10,8 @@ import cv2
 
 from selective_search import selective_search
 
+from sklearn.model_selection import StratifiedShuffleSplit
+
 image_size = 224
 cropped_image_size = 64
 
@@ -130,15 +132,17 @@ data_images = []
 data_labels = []
 
 def process_image(file, data_dir, dataset):
+    global data_images, data_labels
     file_name = file['file_name']
+    print(file_name)
     img_annots = get_image_ground_truth(dataset, file_name)
     prop = get_image_proposals(data_dir + file_name)
     prop_categories = assign_category_to_proposal(prop, img_annots)
     cropped_resized_images = crop_images_to_proposals(data_dir + file_name, prop, new_image_size=cropped_image_size)
     cropped_resized_images_ground_truth = crop_images_to_proposals(data_dir + file_name,img_annots['bbox'], new_image_size=cropped_image_size)
     
-    #data_images = data_images + cropped_resized_images + cropped_resized_images_ground_truth
-    #data_labels = data_labels + prop_categories + img_annots['supercategory']
+    data_images = data_images + cropped_resized_images + cropped_resized_images_ground_truth
+    data_labels = data_labels + prop_categories + img_annots['supercategory']
 
     """
     print(f"Processing {file}...")
@@ -178,8 +182,24 @@ if __name__ == '__main__':
         func = partial(process_image, data_dir=data_dir, dataset=dataset)
         pool.map(func, dataset['images'])
 
+    print(np.array(data_images).shape)
+    print(np.array(data_labels).shape)
 
-    exit()
+    sss = StratifiedShuffleSplit(n_splits=10, test_size=0.2, random_state=0)
+    splits = sss.split(data_images, data_labels)
+    x_train_samples, x_test_samples = [], []
+    y_train_samples, y_test_samples = [], []
+    for train_index, test_index in splits:
+        x_train_samples.append(data_images[train_index]) 
+        x_test_samples.append(data_images[test_index])
+        y_train_samples.append(data_labels[train_index])
+        y_test_samples.append(data_labels[test_index])
+
+    
+
+
+
+    """
     for batch in range(15):
         print(f"Searching for bounding boxes in batch {batch+1}...")
         data_dir = f'./data/batch_{batch+1}/'
@@ -195,4 +215,5 @@ if __name__ == '__main__':
         with Pool(processes=4) as pool:
             func = partial(process_image, data_dir=data_dir, batch_idx=batch+1)
             pool.map(func, files)
+    """
                 
