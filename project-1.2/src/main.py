@@ -64,10 +64,10 @@ def get_image_ground_truth(dataset, filename):
 # All the images have to be resized to the standard size and hence the annotation boxes coordinates
 # [x, y, w, h] = ann['bbox']
 
-def get_image_proposals(filepath):
+def get_image_proposals(filepath,img_annots):
     # Get the proposals for an image
     image = cv2.imread(filepath)
-    image = cv2.resize(image,(image_size,image_size))
+    image = cv2.resize(image,(img_annots['new_size'][0],img_annots['new_size'][1]))
     ss = cv2.ximgproc.segmentation.createSelectiveSearchSegmentation()
     ss.setBaseImage(image)
     ss.switchToSelectiveSearchFast()
@@ -131,20 +131,19 @@ def assign_category_to_proposal(prop, img_annots):
             
     return prop_categories
 
-def crop_images_to_proposals(filepath, prop, new_image_size):
+def crop_images_to_proposals(filepath, prop, new_image_size, img_annots):
     image = cv2.imread(filepath)
-    image = cv2.resize(image,(image_size,image_size))
+    image = cv2.resize(image,(img_annots['new_size'][0],img_annots['new_size'][1]))
     cropped_resized_images = []
     for box in prop:
         cropped_image = image[int(box[1]):int(box[1]+box[3]),int(box[0]):int(box[0] + box[2])]
         try:
-            cropped_resized_images.append(cv2.resize(cropped_image, (new_image_size,new_image_size)))
+            cropped_resized_images.append(cv2.resize(cropped_image,(new_image_size,new_image_size)))
         except:
             print("The cropped image is empty")
-            print([int(i) for i in box])
-            print(cropped_image)
     
     return cropped_resized_images
+        
 
 data_images = []
 data_labels = []
@@ -153,10 +152,10 @@ def process_image(file, data_dir, dataset):
     global data_images, data_labels
     file_name = file['file_name']
     img_annots = get_image_ground_truth(dataset, file_name)
-    prop = get_image_proposals(data_dir + file_name)
+    prop = get_image_proposals(data_dir + file_name, img_annots)
     prop_categories = assign_category_to_proposal(prop, img_annots)
-    cropped_resized_images = crop_images_to_proposals(data_dir + file_name, prop, new_image_size=cropped_image_size)
-    cropped_resized_images_ground_truth = crop_images_to_proposals(data_dir + file_name,img_annots['bbox'], new_image_size=cropped_image_size)
+    cropped_resized_images = crop_images_to_proposals(data_dir + file_name, prop, cropped_image_size, img_annots)
+    cropped_resized_images_ground_truth = crop_images_to_proposals(data_dir + file_name,img_annots['bbox'], cropped_image_size, img_annots)
     
     data_images = data_images + cropped_resized_images + cropped_resized_images_ground_truth
     data_labels = data_labels + prop_categories + img_annots['supercategory']
