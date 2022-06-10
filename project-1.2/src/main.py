@@ -199,13 +199,13 @@ if __name__ == '__main__':
         train_labels = [pair[1] for pair in vals]
     
     with Pool(processes=4) as pool:
-        func = partial(process_image, data_dir=data_dir, dataset=dataset, set_name='val')
+        func = partial(process_image, data_dir=data_dir, dataset=dataset)
         vals = pool.map(func, val_set)
         val_images = [pair[0] for pair in vals]
         val_labels = [pair[1] for pair in vals]
 
     with Pool(processes=4) as pool:
-        func = partial(process_image, data_dir=data_dir, dataset=dataset, set_name='test')
+        func = partial(process_image, data_dir=data_dir, dataset=dataset)
         vals = pool.map(func, test_set)
         test_images = [pair[0] for pair in vals]
         test_labels = [pair[1] for pair in vals]
