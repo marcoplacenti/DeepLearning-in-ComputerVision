@@ -155,7 +155,7 @@ def process_image(file, data_dir, dataset):
     cropped_resized_images_ground_truth = crop_images_to_proposals(data_dir + file_name,img_annots['bbox'], cropped_image_size, img_annots)
     
     img = cropped_resized_images + cropped_resized_images_ground_truth
-    label = train_labels + prop_categories + img_annots['supercategory']
+    label = prop_categories + img_annots['supercategory']
 
     return img, label
 
@@ -192,19 +192,19 @@ if __name__ == '__main__':
         elif candidate['id'] in test_dataset_id:
             test_set.append(candidate)
 
-    with Pool(processes=2) as pool:
+    with Pool(processes=4) as pool:
         func = partial(process_image, data_dir=data_dir, dataset=dataset)
         vals = pool.map(func, train_set)
         train_images = [pair[0] for pair in vals]
         train_labels = [pair[1] for pair in vals]
     
-    with Pool(processes=2) as pool:
+    with Pool(processes=4) as pool:
         func = partial(process_image, data_dir=data_dir, dataset=dataset, set_name='val')
         vals = pool.map(func, val_set)
         val_images = [pair[0] for pair in vals]
         val_labels = [pair[1] for pair in vals]
 
-    with Pool(processes=2) as pool:
+    with Pool(processes=4) as pool:
         func = partial(process_image, data_dir=data_dir, dataset=dataset, set_name='test')
         vals = pool.map(func, test_set)
         test_images = [pair[0] for pair in vals]
