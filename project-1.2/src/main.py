@@ -238,7 +238,7 @@ if __name__ == '__main__':
         vals = pool.map(func, train_set[0:100])
         images = [pair[0] for pair in vals]
         for pair in vals:
-            print(np.array(pair[0]).shape, dtype='object')
+            print(np.array(pair[0], dtype='object').shape)
         labels = [pair[1] for pair in vals]
     images = np.array(images, dtype='object')
     for i in range(0, images.shape[0], 20):
