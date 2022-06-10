@@ -138,10 +138,10 @@ def crop_images_to_proposals(filepath, prop, new_image_size):
     for box in prop:
         cropped_image = image[int(box[1]):int(box[1]+box[3]),int(box[0]):int(box[0] + box[2])]
         try:
-            cropped_resized_images.append(cv2.resize(cropped_image,(new_image_size,new_image_size)))
+            cropped_resized_images.append(cv2.resize(cropped_image, (new_image_size,new_image_size)))
         except:
             print("The cropped image is empty")
-            print(box)
+            print(cropped_image)
     
     return cropped_resized_images
 
