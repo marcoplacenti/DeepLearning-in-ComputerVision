@@ -214,10 +214,12 @@ if __name__ == '__main__':
         labels = [pair[1] for pair in vals]
         file_names = [pair[2] for pair in vals]
     images = np.array(images, dtype='object')
+    agg_images = []
     for idx, image in enumerate(images):
-        joblib.dump(image, f'./data/split_dataset/val/val_images_{idx}.pkl', compress=True)
+        agg_images.extend(image)
+    joblib.dump(agg_images, f'./data/split_dataset/test/val_images_{idx}.pkl', compress=True)
     #np.save('./data/split_dataset/val_images.npy', images)
-
+    exit()
     labels = np.array(labels, dtype='object')
     joblib.dump(labels, './data/split_dataset/val/val_labels.pkl', compress=True)
     #np.save('./data/split_dataset/val_labels.npy', labels)
