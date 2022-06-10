@@ -4,14 +4,11 @@ import json
 from copy import deepcopy
 import joblib
 
-from multiprocessing import Pool, Process, Manager
+from multiprocessing import Pool
 from functools import partial
 
 import cv2
 
-from selective_search import selective_search
-
-from sklearn.model_selection import StratifiedShuffleSplit
 
 image_size = 224
 cropped_image_size = 64
@@ -72,7 +69,7 @@ def get_image_proposals(filepath,img_annots):
     ss = cv2.ximgproc.segmentation.createSelectiveSearchSegmentation()
     ss.setBaseImage(image)
     ss.switchToSelectiveSearchFast()
-    prop = ss.process()[:2000]
+    prop = ss.process()[:1200]
     return prop
 
 
@@ -205,22 +202,19 @@ if __name__ == '__main__':
     if not os.path.exists('./data/split_dataset/test'):
         os.makedirs('./data/split_dataset/test')
     
-    """
+    
     print("Processing validation...")
     with Pool(processes=4) as pool:
         func = partial(process_image, data_dir=data_dir, dataset=dataset)
         vals = pool.map(func, val_set)
-        images = [pair[0] for pair in vals]
+        for idx, pair in enumerate(vals):
+            img = np.array(pair[0], dtype='object')
+            joblib.dump(img, f'./data/split_dataset/val/val_images_{idx}.pkl', compress=5)
         labels = [pair[1] for pair in vals]
         file_names = [pair[2] for pair in vals]
-    images = np.array(images, dtype='object')
-    for idx, image in enumerate(images):
-        joblib.dump(image, f'./data/split_dataset/val/val_images_{idx}.pkl', compress=5)
-    #np.save('./data/split_dataset/val_images.npy', images)
 
     labels = np.array(labels, dtype='object')
     joblib.dump(labels, './data/split_dataset/val/val_labels.pkl', compress=5)
-    #np.save('./data/split_dataset/val_labels.npy', labels)
 
     joblib.dump(np.array(file_names, './data/split_dataset/val_filenames.pkl'), compress=5)
 
@@ -228,37 +222,31 @@ if __name__ == '__main__':
     with Pool(processes=4) as pool:
         func = partial(process_image, data_dir=data_dir, dataset=dataset)
         vals = pool.map(func, test_set)
-        images = [pair[0] for pair in vals]
+        for idx, pair in enumerate(vals):
+            img = np.array(pair[0], dtype='object')
+            joblib.dump(img, f'./data/split_dataset/test/test_images_{idx}.pkl', compress=5)
         labels = [pair[1] for pair in vals]
         file_names = [pair[2] for pair in vals]
-    images = np.array(images, dtype='object')
-    for idx, image in enumerate(images):
-        joblib.dump(image, f'./data/split_dataset/test/test_images_{idx}.pkl', compress=5)
-    #np.save('./data/split_dataset/test_images.npy', images)
 
     labels = np.array(labels, dtype='object')
     joblib.dump(labels, './data/split_dataset/test/test_labels.pkl', compress=5)
-    #np.save('./data/split_dataset/test_labels.npy', labels)
 
     joblib.dump(np.array(file_names, './data/split_dataset/test_filenames.pkl'), compress=5)
-    """
+    
     print("Processing training...")
     with Pool(processes=4) as pool:
         func = partial(process_image, data_dir=data_dir, dataset=dataset)
         vals = pool.map(func, train_set)
-        images = [pair[0] for pair in vals]
+
+        for idx, pair in enumerate(vals):
+            img = np.array(pair[0], dtype='object')
+            joblib.dump(img, f'./data/split_dataset/train/train_images_{idx}.pkl', compress=5)
+
         labels = [pair[1] for pair in vals]
         file_names = [pair[2] for pair in vals]
-    images = np.array(images, dtype='object')
-    for idx, image in enumerate(images):
-        image = np.array(image, dtype='object')
-        print(idx, image.shape)
-        joblib.dump(image, f'./data/split_dataset/train/train_images_{idx}.pkl', compress=5)
-    #np.save('./data/split_dataset/train_images.npy', images)
 
     labels = np.array(labels, dtype='object')
     joblib.dump(labels, './data/split_dataset/train/train_labels.pkl', compress=5)
-    #np.save('./data/split_dataset/train_labels.npy', labels)
 
     joblib.dump(np.array(file_names, './data/split_dataset/train_filenames.pkl'), compress=5)
                 
