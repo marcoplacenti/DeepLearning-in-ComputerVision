@@ -25,8 +25,19 @@ def get_image_ground_truth(dataset, filename):
         if img['file_name'] == filename:
             my_img = deepcopy(img)
 
-    w_factor = float(image_size)/my_img['width']
-    h_factor = float(image_size)/my_img['height']
+    if my_img['width'] > 512 or my_img['height'] > 512:
+        if my_img['width'] > my_img['height']:
+            new_width = 512
+            new_height = int(my_img['height'] * (512./my_img['width']))
+        elif my_img['height'] > my_img['width']:
+            new_height = 512
+            new_width = int(my_img['width'] * (512./my_img['height']))
+        else:
+            new_width = 512
+            new_height = 512
+
+    w_factor = float(new_width)/my_img['width']
+    h_factor = float(new_height)/my_img['height']
 
     # Finding all the annotations for one image - maybe try to optimize it by using pandas?
     img_annots = {}
@@ -34,6 +45,9 @@ def get_image_ground_truth(dataset, filename):
     img_annots['bbox'] = []
     img_annots['category_id'] = []
     img_annots['supercategory'] = []
+    img_annots['orig_size'] = [my_img['width'], my_img['height']]
+    img_annots['new_size'] = [new_width, new_height]
+
     for annot in dataset['annotations']:
         if annot['image_id'] == my_img['id']:
             #print(annot['id'], annot['bbox'], annot['category_id'])#, dataset['categories']['id'][annot['id']])
@@ -123,7 +137,10 @@ def crop_images_to_proposals(filepath, prop, new_image_size):
     cropped_resized_images = []
     for box in prop:
         cropped_image = image[int(box[1]):int(box[1]+box[3]),int(box[0]):int(box[0] + box[2])]
-        cropped_resized_images.append(cv2.resize(cropped_image,(image_size,image_size)))
+        try:
+            cropped_resized_images.append(cv2.resize(cropped_image,(new_image_size,new_image_size)))
+        except:
+            print("The cropped image is empty")
     
     return cropped_resized_images
 
@@ -189,10 +206,6 @@ if __name__ == '__main__':
         x_test_samples.append(data_images[test_index])
         y_train_samples.append(data_labels[train_index])
         y_test_samples.append(data_labels[test_index])
-
-    
-    
-
 
 
     """
