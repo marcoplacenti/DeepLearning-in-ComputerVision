@@ -123,7 +123,6 @@ def crop_images_to_proposals(filepath, prop, new_image_size):
     cropped_resized_images = []
     for box in prop:
         cropped_image = image[int(box[1]):int(box[1]+box[3]),int(box[0]):int(box[0] + box[2])]
-        
         cropped_resized_images.append(cv2.resize(cropped_image,(image_size,image_size)))
     
     return cropped_resized_images
@@ -134,7 +133,6 @@ data_labels = []
 def process_image(file, data_dir, dataset):
     global data_images, data_labels
     file_name = file['file_name']
-    print(file_name)
     img_annots = get_image_ground_truth(dataset, file_name)
     prop = get_image_proposals(data_dir + file_name)
     prop_categories = assign_category_to_proposal(prop, img_annots)
@@ -170,20 +168,17 @@ if __name__ == '__main__':
 
     file_name = 'batch_1/000028.jpg'
 
-    data_dir = '/dtu/datasets1/02514/data_wastedetection/'
-    #data_dir = './data/'
+    #data_dir = '/dtu/datasets1/02514/data_wastedetection/'
+    data_dir = './data/'
     anns_file_path = data_dir + 'annotations.json'
 
     # Read annotations
     with open(anns_file_path, 'r') as f:
         dataset = json.loads(f.read())
 
-    with Pool(processes=4) as pool:
+    with Pool(processes=2) as pool:
         func = partial(process_image, data_dir=data_dir, dataset=dataset)
         pool.map(func, dataset['images'])
-
-    print(np.array(data_images).shape)
-    print(np.array(data_labels).shape)
 
     sss = StratifiedShuffleSplit(n_splits=10, test_size=0.2, random_state=0)
     splits = sss.split(data_images, data_labels)
@@ -195,6 +190,7 @@ if __name__ == '__main__':
         y_train_samples.append(data_labels[train_index])
         y_test_samples.append(data_labels[test_index])
 
+    
     
 
 
