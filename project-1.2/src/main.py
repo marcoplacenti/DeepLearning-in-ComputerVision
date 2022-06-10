@@ -174,7 +174,7 @@ def process_set(set_name, data, data_dir, dataset):
         joblib.dump(lab, f'./data/split_dataset/{set_name}/{set_name}_labels.pkl', compress=5)
 
         fn = np.array(pair[2], dtype='object')
-        joblib.dump(np.array(fn, f'./data/split_dataset/{set_name}_filenames.pkl'), compress=5)
+        joblib.dump(fn, f'./data/split_dataset/{set_name}_filenames.pkl', compress=5)
 
 if __name__ == '__main__':
 
