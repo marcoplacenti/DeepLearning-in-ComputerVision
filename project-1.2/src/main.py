@@ -121,15 +121,19 @@ def assign_category_to_proposal(prop, img_annots):
             assignemt_prob[i,j] = get_iou(np.array(prop[i]),np.array(img_annots['bbox'][j]))
             
     prop_categories = []
+    prop_filtered = []
 
     for i in range(len(prop)):
-        if not (assignemt_prob[i,:] > 0.5).any(): 
-            prop_categories.append('background')
+        if not (assignemt_prob[i,:] >= 0.7).any():
+            if (assignemt_prob[i, :] < 0.3).any():
+                prop_filtered.append(prop[i])
+                prop_categories.append('background')
         else:
             index = np.argmax(assignemt_prob[i,:])
             prop_categories.append(img_annots['supercategory'][index])
+            prop_filtered.append(prop[i])
             
-    return prop_categories
+    return prop_categories, prop_filtered
 
 def crop_images_to_proposals(filepath, prop, new_image_size, img_annots):
     image = cv2.imread(filepath)
@@ -150,8 +154,8 @@ def process_image(file, data_dir, dataset):
     print(file_name)
     img_annots = get_image_ground_truth(dataset, file_name)
     prop = get_image_proposals(data_dir + file_name, img_annots)
-    prop_categories = assign_category_to_proposal(prop, img_annots)
-    cropped_resized_images = crop_images_to_proposals(data_dir + file_name, prop, cropped_image_size, img_annots)
+    prop_categories, prop_filtered = assign_category_to_proposal(prop, img_annots)
+    cropped_resized_images = crop_images_to_proposals(data_dir + file_name, prop_filtered, cropped_image_size, img_annots)
     cropped_resized_images_ground_truth = crop_images_to_proposals(data_dir + file_name,img_annots['bbox'], cropped_image_size, img_annots)
     
     img = cropped_resized_images + cropped_resized_images_ground_truth
@@ -171,9 +175,9 @@ if __name__ == '__main__':
         dataset = json.loads(f.read())
 
     dataset_size = len(dataset['images'])
-    train_dataset_size = int(0.1*dataset_size)
+    train_dataset_size = int(0.8*dataset_size)
     validation_dataset_size = int(0.1*dataset_size)
-    test_dataset_size = int(0.1*dataset_size) #dataset_size - (train_dataset_size + validation_dataset_size)
+    test_dataset_size = dataset_size - (train_dataset_size + validation_dataset_size)
 
     np.random.seed(42)
     arr = np.arange(0,dataset_size)
@@ -200,36 +204,36 @@ if __name__ == '__main__':
     with Pool(processes=4) as pool:
         func = partial(process_image, data_dir=data_dir, dataset=dataset)
         vals = pool.map(func, train_set)
-        train_images = [pair[0] for pair in vals]
-        train_labels = [pair[1] for pair in vals]
-    train_images = np.array(train_images, dtype='object')
-    np.save('./data/split_dataset/train_images.npy', train_images)
+        images = [pair[0] for pair in vals]
+        labels = [pair[1] for pair in vals]
+    images = np.array(images, dtype='object')
+    np.save('./data/split_dataset/train_images.npy', images)
 
-    train_labels = np.array(train_labels, dtype='object')
-    np.save('./data/split_dataset/train_labels.npy', train_labels)
+    labels = np.array(labels, dtype='object')
+    np.save('./data/split_dataset/train_labels.npy', labels)
     
     print("Processing validation...")
     with Pool(processes=4) as pool:
         func = partial(process_image, data_dir=data_dir, dataset=dataset)
         vals = pool.map(func, val_set)
-        val_images = [pair[0] for pair in vals]
-        val_labels = [pair[1] for pair in vals]
-    val_images = np.array(val_images, dtype='object')
-    np.save('./data/split_dataset/val_images.npy', val_images)
+        images = [pair[0] for pair in vals]
+        labels = [pair[1] for pair in vals]
+    images = np.array(images, dtype='object')
+    np.save('./data/split_dataset/val_images.npy', images)
 
-    val_labels = np.array(val_labels, dtype='object')
-    np.save('./data/split_dataset/val_labels.npy', val_labels)
+    labels = np.array(labels, dtype='object')
+    np.save('./data/split_dataset/val_labels.npy', labels)
 
     print("Processing testing...")
     with Pool(processes=4) as pool:
         func = partial(process_image, data_dir=data_dir, dataset=dataset)
         vals = pool.map(func, test_set)
-        test_images = [pair[0] for pair in vals]
-        test_labels = [pair[1] for pair in vals]
-    test_images = np.array(test_images, dtype='object')
-    np.save('./data/split_dataset/test_images.npy', test_images)
+        images = [pair[0] for pair in vals]
+        labels = [pair[1] for pair in vals]
+    images = np.array(images, dtype='object')
+    np.save('./data/split_dataset/test_images.npy', images)
 
-    test_labels = np.array(test_labels, dtype='object')
-    np.save('./data/split_dataset/test_labels.npy', test_labels)
+    labels = np.array(labels, dtype='object')
+    np.save('./data/split_dataset/test_labels.npy', labels)
 
                 
