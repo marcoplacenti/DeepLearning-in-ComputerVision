@@ -175,6 +175,7 @@ if __name__ == '__main__':
     validation_dataset_size = int(0.1*dataset_size)
     test_dataset_size = dataset_size - (train_dataset_size + validation_dataset_size)
 
+    np.random.seed(42)
     arr = np.arange(0,dataset_size)
     np.random.shuffle(arr)
 
@@ -192,39 +193,39 @@ if __name__ == '__main__':
         elif candidate['id'] in test_dataset_id:
             test_set.append(candidate)
 
+    if not os.path.exists('./data/split_dataset'):
+        os.makedirs('./data/split_dataset')
+
+    print("Processing training...")
     with Pool(processes=4) as pool:
         func = partial(process_image, data_dir=data_dir, dataset=dataset)
         vals = pool.map(func, train_set)
         train_images = [pair[0] for pair in vals]
         train_labels = [pair[1] for pair in vals]
-    
-    with Pool(processes=4) as pool:
-        func = partial(process_image, data_dir=data_dir, dataset=dataset)
-        vals = pool.map(func, val_set)
-        val_images = [pair[0] for pair in vals]
-        val_labels = [pair[1] for pair in vals]
-
-    with Pool(processes=4) as pool:
-        func = partial(process_image, data_dir=data_dir, dataset=dataset)
-        vals = pool.map(func, test_set)
-        test_images = [pair[0] for pair in vals]
-        test_labels = [pair[1] for pair in vals]
-    
-    if not os.path.exists('./data/split_dataset'):
-        os.makedirs('./data/split_dataset')
-
     train_images = np.array(train_images, dtype='object')
     np.save('./data/split_dataset/train_images.npy', train_images)
 
     train_labels = np.array(train_labels, dtype='object')
     np.save('./data/split_dataset/train_labels.npy', train_labels)
-
+    
+    print("Processing validation...")
+    with Pool(processes=4) as pool:
+        func = partial(process_image, data_dir=data_dir, dataset=dataset)
+        vals = pool.map(func, val_set)
+        val_images = [pair[0] for pair in vals]
+        val_labels = [pair[1] for pair in vals]
     val_images = np.array(val_images, dtype='object')
     np.save('./data/split_dataset/val_images.npy', val_images)
 
     val_labels = np.array(val_labels, dtype='object')
     np.save('./data/split_dataset/val_labels.npy', val_labels)
 
+    print("Processing testing...")
+    with Pool(processes=4) as pool:
+        func = partial(process_image, data_dir=data_dir, dataset=dataset)
+        vals = pool.map(func, test_set)
+        test_images = [pair[0] for pair in vals]
+        test_labels = [pair[1] for pair in vals]
     test_images = np.array(test_images, dtype='object')
     np.save('./data/split_dataset/test_images.npy', test_images)
 
