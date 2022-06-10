@@ -164,7 +164,7 @@ def process_image(file, data_dir, dataset):
 def process_set(set_name, data, data_dir, dataset):
     with Pool(processes=4) as pool:
         func = partial(process_image, data_dir=data_dir, dataset=dataset)
-        vals = pool.map(func, val_set)
+        vals = pool.map(func, data)
     
     for idx, pair in enumerate(vals):
         img = np.array(pair[0], dtype='object')
@@ -225,3 +225,4 @@ if __name__ == '__main__':
 
     print("Processing training...")
     process_set('train', train_set, data_dir, dataset)
+    
