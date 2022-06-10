@@ -2,6 +2,7 @@ import numpy as np
 import os
 import json
 from copy import deepcopy
+import joblib
 
 from multiprocessing import Pool, Process, Manager
 from functools import partial
@@ -207,10 +208,12 @@ if __name__ == '__main__':
         images = [pair[0] for pair in vals]
         labels = [pair[1] for pair in vals]
     images = np.array(images, dtype='object')
-    np.save('./data/split_dataset/train_images.npy', images)
+    joblib.dump(images, './data/split_dataset/train_images.pkl', compress=True)
+    #np.save('./data/split_dataset/train_images.npy', images)
 
     labels = np.array(labels, dtype='object')
-    np.save('./data/split_dataset/train_labels.npy', labels)
+    joblib.dump(labels, './data/split_dataset/train_labels.pkl', compress=True)
+    #np.save('./data/split_dataset/train_labels.npy', labels)
     
     print("Processing validation...")
     with Pool(processes=4) as pool:
@@ -219,10 +222,12 @@ if __name__ == '__main__':
         images = [pair[0] for pair in vals]
         labels = [pair[1] for pair in vals]
     images = np.array(images, dtype='object')
-    np.save('./data/split_dataset/val_images.npy', images)
+    joblib.dump(images, './data/split_dataset/val_images.pkl', compress=True)
+    #np.save('./data/split_dataset/val_images.npy', images)
 
     labels = np.array(labels, dtype='object')
-    np.save('./data/split_dataset/val_labels.npy', labels)
+    joblib.dump(labels, './data/split_dataset/val_labels.pkl', compress=True)
+    #np.save('./data/split_dataset/val_labels.npy', labels)
 
     print("Processing testing...")
     with Pool(processes=4) as pool:
@@ -231,9 +236,11 @@ if __name__ == '__main__':
         images = [pair[0] for pair in vals]
         labels = [pair[1] for pair in vals]
     images = np.array(images, dtype='object')
-    np.save('./data/split_dataset/test_images.npy', images)
+    joblib.dump(images, './data/split_dataset/test_labels.pkl', compress=True)
+    #np.save('./data/split_dataset/test_images.npy', images)
 
     labels = np.array(labels, dtype='object')
-    np.save('./data/split_dataset/test_labels.npy', labels)
+    joblib.dump(labels, './data/split_dataset/test_labels.pkl', compress=True)
+    #np.save('./data/split_dataset/test_labels.npy', labels)
 
                 
