@@ -204,11 +204,12 @@ if __name__ == '__main__':
     print("Processing training...")
     with Pool(processes=4) as pool:
         func = partial(process_image, data_dir=data_dir, dataset=dataset)
-        vals = pool.map(func, train_set)
+        vals = pool.map(func, train_set[0:100])
         images = [pair[0] for pair in vals]
         labels = [pair[1] for pair in vals]
     images = np.array(images, dtype='object')
-    joblib.dump(images, './data/split_dataset/train_images.pkl', compress=True)
+    for i in range(0, images.shape[0], 50):
+        joblib.dump(images[i:50], f'./data/split_dataset/train_images_{i}.pkl', compress=True)
     #np.save('./data/split_dataset/train_images.npy', images)
 
     labels = np.array(labels, dtype='object')
