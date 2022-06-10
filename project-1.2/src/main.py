@@ -214,14 +214,12 @@ if __name__ == '__main__':
         labels = [pair[1] for pair in vals]
         file_names = [pair[2] for pair in vals]
     images = np.array(images, dtype='object')
-    agg_images = []
     for idx, image in enumerate(images):
-        agg_images.extend(image)
-    joblib.dump(agg_images, f'./data/split_dataset/test/val_images_{idx}.pkl', compress=True)
+        joblib.dump(image, f'./data/split_dataset/val/val_images_{idx}.pkl', compress=5)
     #np.save('./data/split_dataset/val_images.npy', images)
-    exit()
+
     labels = np.array(labels, dtype='object')
-    joblib.dump(labels, './data/split_dataset/val/val_labels.pkl', compress=True)
+    joblib.dump(labels, './data/split_dataset/val/val_labels.pkl', compress=5)
     #np.save('./data/split_dataset/val_labels.npy', labels)
 
     print("Processing testing...")
@@ -233,11 +231,11 @@ if __name__ == '__main__':
         file_names = [pair[2] for pair in vals]
     images = np.array(images, dtype='object')
     for idx, image in enumerate(images):
-        joblib.dump(image, f'./data/split_dataset/test/test_images_{idx}.pkl', compress=True)
+        joblib.dump(image, f'./data/split_dataset/test/test_images_{idx}.pkl', compress=5)
     #np.save('./data/split_dataset/test_images.npy', images)
 
     labels = np.array(labels, dtype='object')
-    joblib.dump(labels, './data/split_dataset/test/test_labels.pkl', compress=True)
+    joblib.dump(labels, './data/split_dataset/test/test_labels.pkl', compress=5)
     #np.save('./data/split_dataset/test_labels.npy', labels)
 
     print("Processing training...")
@@ -249,10 +247,10 @@ if __name__ == '__main__':
         file_names = [pair[2] for pair in vals]
     images = np.array(images, dtype='object')
     for idx, image in enumerate(images):
-        joblib.dump(image, f'./data/split_dataset/train/train_images_{idx}.pkl', compress=True)
+        joblib.dump(image, f'./data/split_dataset/train/train_images_{idx}.pkl', compress=5)
     #np.save('./data/split_dataset/train_images.npy', images)
 
     labels = np.array(labels, dtype='object')
-    joblib.dump(labels, './data/split_dataset/train/train_labels.pkl', compress=True)
+    joblib.dump(labels, './data/split_dataset/train/train_labels.pkl', compress=5)
     #np.save('./data/split_dataset/train_labels.npy', labels)
                 
