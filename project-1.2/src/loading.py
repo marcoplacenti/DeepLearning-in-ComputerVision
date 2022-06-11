@@ -19,8 +19,9 @@ for idx, img in tqdm(enumerate(imgs)):
         val_data_sep.append(img_proposals)
 
         val_data.extend(img_proposals)
-        print(np.array(val_data).shape)
-        exit()
+        
+print(np.array(val_data).shape)
+        
 exit()
 val_labels = joblib.load('./data/split_dataset/val/val_labels.pkl')
 
