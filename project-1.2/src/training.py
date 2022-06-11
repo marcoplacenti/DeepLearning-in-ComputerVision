@@ -23,9 +23,9 @@ def train(model, optimizer, train_loader, validation_loader, num_epochs):
             data, target = data.to(device), target.to(device)
 
             data = torch.permute(data, (0, 3, 1, 2))
-
-            print(data.size())
+            target = target.view(-1)
             print(target.size())
+
             #Zero the gradients computed for each weight
             optimizer.zero_grad()
             #Forward pass your image through the network
