@@ -62,7 +62,7 @@ def get_dataloader(set_name):
         else: samples_weight.append(16)
 
     samples_weight = torch.from_numpy(np.array(samples_weight))
-    samples_weigth = samples_weight.double()
+    samples_weight = samples_weight.double()
     sampler = WeightedRandomSampler(samples_weight, len(samples_weight))
 
     labels = np.array([np.array([int(classes_map[label])]) for label in labels])
@@ -76,7 +76,13 @@ def get_dataloader(set_name):
     print(idxs)
 
     dataset = TensorDataset(data, labels) # create your datset
-    dataloader = DataLoader(dataset) # create your dataloader
+    dataloader = DataLoader(dataset, batch_size=64, sampler=sampler, num_workers=3)
+    #dataloader = DataLoader(dataset) # create your dataloader
+
+    for idx, batch in enumerate(dataloader):
+        x, y = batch
+        print(y)
+        break
 
     return dataloader
 
