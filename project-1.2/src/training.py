@@ -23,7 +23,7 @@ def train(model, optimizer, train_loader, validation_loader, num_epochs):
             data, target = data.to(device), target.to(device)
 
             data = torch.permute(data, (0, 3, 1, 2)).to(device)
-            target = target.view(-1).int().to(device)
+            target = target.view(-1).long().to(device)
 
             #Zero the gradients computed for each weight
             optimizer.zero_grad()
