@@ -1,10 +1,22 @@
 import joblib
+import os
+import numpy as np
 
-sample = joblib.load('./data/split_dataset/train/train_image_1.pkl')
-print(sample.shape)
+imgs = os.listdir('./data/split_dataset/val/')
 
-with open('./data/split_dataset/train/train_image_1.pkl', 'rb') as pickle_file:
-    sample = joblib.load(pickle_file)
+val_data_sep = []
+val_data = []
+for img in imgs:
+    if img.startswith('val_image'):
+        img_proposals = joblib.load('./data/split_dataset/val/'+img)
+        val_data_sep.append(img_proposals)
+        val_data.extend(img_proposals)
 
+val_labels = joblib.load('./data/split_dataset/val/val_labels.pkl')
 
-print(sample.shape)
+val_filenames = joblib.load('./data/split_dataset/val_filenames.pkl')
+
+print(np.array(val_data_sep).shape)
+print(np.array(val_data).shape)
+print(np.array(val_labels).shape)
+print(np.array(val_filenames).shape)
