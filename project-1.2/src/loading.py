@@ -10,10 +10,11 @@ import numpy as np
 def get_dataloader(set_name):
 
     dir = os.listdir(f'./data/split_dataset/{set_name}/')
+    dir_len = len([d for d in dir if d.startswith(set_name+'_image')])
 
     data_sep = []
     data, labels = [], []
-    for idx in tqdm(range(len(dir))):
+    for idx in tqdm(range(dir_len)):
         img_prefix = f'{set_name}_image_{idx}.pkl'
         lab_prefix = f'{set_name}_labels_{idx}.pkl'
         
