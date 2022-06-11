@@ -1,16 +1,16 @@
 import numpy as np
 import os
 import json
+import pickle
 from copy import deepcopy
+import joblib
 
 from multiprocessing import Pool
 from functools import partial
 
 import cv2
 
-from selective_search import selective_search
-
-from sklearn.model_selection import StratifiedShuffleSplit
+#from selective_search import selective_search
 
 image_size = 224
 cropped_image_size = 64
@@ -71,7 +71,7 @@ def get_image_proposals(filepath,img_annots):
     ss = cv2.ximgproc.segmentation.createSelectiveSearchSegmentation()
     ss.setBaseImage(image)
     ss.switchToSelectiveSearchFast()
-    prop = ss.process()[:2000]
+    prop = ss.process()[:1000]
     return prop
 
 
@@ -121,15 +121,19 @@ def assign_category_to_proposal(prop, img_annots):
             assignemt_prob[i,j] = get_iou(np.array(prop[i]),np.array(img_annots['bbox'][j]))
             
     prop_categories = []
+    prop_filtered = []
 
     for i in range(len(prop)):
-        if not (assignemt_prob[i,:] > 0.5).any(): 
-            prop_categories.append('background')
+        if not (assignemt_prob[i,:] >= 0.7).any():
+            if (assignemt_prob[i, :] < 0.3).any():
+                prop_filtered.append(prop[i])
+                prop_categories.append('background')
         else:
             index = np.argmax(assignemt_prob[i,:])
             prop_categories.append(img_annots['supercategory'][index])
+            prop_filtered.append(prop[i])
             
-    return prop_categories
+    return prop_categories, prop_filtered
 
 def crop_images_to_proposals(filepath, prop, new_image_size, img_annots):
     image = cv2.imread(filepath)
@@ -140,52 +144,91 @@ def crop_images_to_proposals(filepath, prop, new_image_size, img_annots):
         try:
             cropped_resized_images.append(cv2.resize(cropped_image,(new_image_size,new_image_size)))
         except:
-            cropped_resized_images.append([])
             print("The cropped image is empty")
     
     return cropped_resized_images
         
 
-data_images = []
-data_labels = []
-
-def process_image(file, data_dir, dataset):
-    global data_images, data_labels
+def process_image(file, data_dir, dataset, test):
     file_name = file['file_name']
+    print(file_name)
     img_annots = get_image_ground_truth(dataset, file_name)
     prop = get_image_proposals(data_dir + file_name, img_annots)
-    prop_categories = assign_category_to_proposal(prop, img_annots)
-    cropped_resized_images = crop_images_to_proposals(data_dir + file_name, prop, cropped_image_size, img_annots)
+    prop_categories, prop_filtered = assign_category_to_proposal(prop, img_annots)
+    cropped_resized_images = crop_images_to_proposals(data_dir + file_name, prop_filtered, cropped_image_size, img_annots)
     cropped_resized_images_ground_truth = crop_images_to_proposals(data_dir + file_name,img_annots['bbox'], cropped_image_size, img_annots)
     
-    data_images = data_images + cropped_resized_images + cropped_resized_images_ground_truth
-    data_labels = data_labels + prop_categories + img_annots['supercategory']
-
-    """
-    print(f"Processing {file}...")
-    image = cv2.imread(data_dir+file)
-    image = cv2.resize(image, (224, 224))
+    if test:
+        img = deepcopy(cropped_resized_images)
+        label = deepcopy(prop_categories)
+        boxes = deepcopy(prop_filtered)
+    else:
+        img = cropped_resized_images + cropped_resized_images_ground_truth
+        label = prop_categories + img_annots['supercategory']
+        boxes = np.concatenate((prop_filtered,np.array(img_annots['bbox'])))
     
-    boxes = np.array(selective_search(image, mode='single', random_sort=False), dtype='object')
-    data_dir.split('/')[2]
-    np.save(f"./data/proposals/{batch_idx}/{file.split('.')[0]}", boxes)
-    """
+    return img, label, [file_name] * len(label), boxes
 
-    """
-    patches = []
-    for box in boxes:
-        patch = image[box[0]:box[2], box[1]:box[3], :]
-        patch_res = cv2.resize(patch, (32, 32))
-        patches.append(patch_res)
+def process_set(set_name, data, data_dir, dataset, test):
+    with Pool(processes=4) as pool:
+        func = partial(process_image, data_dir=data_dir, dataset=dataset, test=test)
+        vals = pool.map(func, data)
     
-    patches = np.array(patches, dtype='object')
-    np.save(f"./data/proposals/{file.split('.')[0]}", patches)
-    """
+    images = [pair[0] for pair in vals]
+    labels = [pair[1] for pair in vals]
+    filenames = [pair[2] for pair in vals]
+    boxes = [pair[3] for pair in vals]
+    #print(len(images[0]))
 
+    im = np.array(images, dtype='object')
+    np.save(f'./data/split_dataset/{set_name}/{set_name}_image.npy', im)
+
+    lab = np.array(labels, dtype='object')
+    np.save(f'./data/split_dataset/{set_name}/{set_name}_labels.npy', lab)
+
+    fn = np.array(filenames, dtype='object')
+    np.save(f'./data/split_dataset/{set_name}/{set_name}_filenames.npy', fn)
+
+    bb = np.array(boxes, dtype='object')
+    np.save(f'./data/split_dataset/{set_name}/{set_name}_boxes.npy', bb)
+ 
+    # TODO this is wrong!! it is not saving the right thing
+    #for idx, pair in enumerate(vals):
+    #with open(f'./data/split_dataset/{set_name}/{set_name}_image.pkl','wb') as f1:
+    #    for idx, pair in enumerate(vals):
+    #        img = np.array(pair[0], dtype='object')
+    #        pickle.dump(img, f1, protocol=pickle.HIGHEST_PROTOCOL)
+    
+    #with open(f'./data/split_dataset/{set_name}/{set_name}_labels.pkl','wb') as f2:
+    #    for idx, pair in enumerate(vals):
+    #        lab = np.array(pair[1], dtype='object')
+    #        pickle.dump(lab, f2, protocol=pickle.HIGHEST_PROTOCOL)
+
+    #with open(f'./data/split_dataset/{set_name}/{set_name}_filenames.pkl', 'wb') as f3:
+    #    for idx, pair in enumerate(vals):
+    #        fn = deepcopy(pair[2])
+    #        #print(fn)
+    #        pickle.dump(fn, f3, protocol=pickle.HIGHEST_PROTOCOL)
+
+    #with open(f'./data/split_dataset/{set_name}/{set_name}_boxes.pkl', 'wb') as f4:
+    #    for idx, pair in enumerate(vals):
+    #        bb = np.array(pair[3], dtype='object')
+    #        pickle.dump(bb, f4, protocol=pickle.HIGHEST_PROTOCOL)
+            
+
+    #img = np.array(vals[0], dtype='object')
+    #joblib.dump(img, f'./data/split_dataset/{set_name}/{set_name}_image.pkl', compress=5)
+
+    #lab = np.array(vals[1], dtype='object')
+    #joblib.dump(lab, f'./data/split_dataset/{set_name}/{set_name}_labels.pkl', compress=5)
+
+    #fn = np.array(vals[2], dtype='object')
+    #joblib.dump(fn, f'./data/split_dataset/{set_name}/{set_name}_filenames.pkl', compress=5)
+
+    #bbxs = np.array(vals[3], dtype='object')
+    #joblib.dump(fn, f'./data/split_dataset/{set_name}/{set_name}_boxes.pkl', compress=5)
 
 if __name__ == '__main__':
-
-    file_name = 'batch_1/000028.jpg'
 
     data_dir = '/dtu/datasets1/02514/data_wastedetection/'
     #data_dir = './data/'
@@ -195,36 +238,42 @@ if __name__ == '__main__':
     with open(anns_file_path, 'r') as f:
         dataset = json.loads(f.read())
 
-    with Pool(processes=2) as pool:
-        func = partial(process_image, data_dir=data_dir, dataset=dataset)
-        pool.map(func, dataset['images'])
+    dataset_size = len(dataset['images'])
+    train_dataset_size = int(0.4*dataset_size)
+    validation_dataset_size = int(0.05*dataset_size)
+    test_dataset_size = int(0.05*dataset_size) #dataset_size - (train_dataset_size + validation_dataset_size)
 
-    sss = StratifiedShuffleSplit(n_splits=10, test_size=0.2, random_state=0)
-    splits = sss.split(data_images, data_labels)
-    x_train_samples, x_test_samples = [], []
-    y_train_samples, y_test_samples = [], []
-    for train_index, test_index in splits:
-        x_train_samples.append(data_images[train_index]) 
-        x_test_samples.append(data_images[test_index])
-        y_train_samples.append(data_labels[train_index])
-        y_test_samples.append(data_labels[test_index])
+    np.random.seed(42)
+    arr = np.arange(0,dataset_size)
+    np.random.shuffle(arr)
 
+    train_dataset_id = arr[0:train_dataset_size]
+    validation_dataset_id = arr[train_dataset_size:train_dataset_size+validation_dataset_size]
+    test_dataset_id = arr[train_dataset_size+validation_dataset_size:train_dataset_size+validation_dataset_size+test_dataset_size]
 
-    """
-    for batch in range(15):
-        print(f"Searching for bounding boxes in batch {batch+1}...")
-        data_dir = f'./data/batch_{batch+1}/'
-        
-        if not os.path.exists('./data/proposals/'):
-            os.makedirs('./data/proposals/')
+    train_set, val_set, test_set = [], [], []
+    for m in range(dataset_size):
+        candidate = dataset['images'][m]
+        if candidate['id'] in train_dataset_id:
+            train_set.append(candidate)
+        elif candidate['id'] in validation_dataset_id:
+            val_set.append(candidate)
+        elif candidate['id'] in test_dataset_id:
+            test_set.append(candidate)
 
-        if not os.path.exists(f'./data/proposals/{batch+1}/'):
-            os.makedirs(f'./data/proposals/{batch+1}/')
+    if not os.path.exists('./data/split_dataset/train'):
+        os.makedirs('./data/split_dataset/train')
+    if not os.path.exists('./data/split_dataset/val'):
+        os.makedirs('./data/split_dataset/val')
+    if not os.path.exists('./data/split_dataset/test'):
+        os.makedirs('./data/split_dataset/test')
+    
+    
+    print("Processing validation...")
+    process_set('val', val_set, data_dir, dataset, False)
+    
+    print("Processing testing...")
+    process_set('test', test_set, data_dir, dataset, True)
 
-        files = os.listdir(data_dir)
-        
-        with Pool(processes=4) as pool:
-            func = partial(process_image, data_dir=data_dir, batch_idx=batch+1)
-            pool.map(func, files)
-    """
-                
+    print("Processing training...")
+    process_set('train', train_set, data_dir, dataset, False)
