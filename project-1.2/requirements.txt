@@ -3,3 +3,4 @@ numpy
 selective-search
 scikit-learn
 joblib
+torch

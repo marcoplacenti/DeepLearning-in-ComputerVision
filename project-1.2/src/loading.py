@@ -14,8 +14,7 @@ val_data = []
 for idx, img in tqdm(enumerate(imgs)):
     if img.startswith('val_image') and idx < 10:
         img_proposals = joblib.load('./data/split_dataset/val/'+img)
-        if idx == 0:
-            print(img_proposals.shape)
+       
         val_data_sep.append(img_proposals)
 
         val_data.extend(img_proposals)
