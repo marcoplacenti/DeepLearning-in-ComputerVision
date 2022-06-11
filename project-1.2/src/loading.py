@@ -39,8 +39,9 @@ def get_dataloader(set_name):
         labels.extend(lab_proposals)
     
     print(len(labels))
-    sub_labels = labels.index('background')
-    print(len(sub_labels))
+    background_labels = [idx for idx, lab in labels if lab=='background']
+    object_labels = [idx for idx, lab in labels if lab!='background']
+    print(len(background_labels))
     exit()
 
     labels = np.array([np.array([int(classes_map[label])]) for label in labels])
