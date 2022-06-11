@@ -25,6 +25,9 @@ def get_dataloader(set_name):
     if set_name == 'val':
         dir_len = int(dir_len*0.50)
 
+    if set_name == 'test':
+        dir_len = int(dir_len*0.50)
+
     data_sep = []
     data, labels = [], []
     for idx in tqdm(range(dir_len)):
@@ -64,8 +67,8 @@ def get_dataloader(set_name):
 
     return dataloader
 
-val_loader = get_dataloader('val')
-#test_loader = get_dataloader('test')
-train_loader = get_dataloader('train')
+#val_loader = get_dataloader('val')
+test_loader = get_dataloader('test')
+#train_loader = get_dataloader('train')
 
 
