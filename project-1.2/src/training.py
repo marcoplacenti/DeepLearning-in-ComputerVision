@@ -21,6 +21,8 @@ def train(model, optimizer, train_loader, validation_loader, num_epochs):
         train_loss = []
         for minibatch_no, (data, target) in tqdm(enumerate(train_loader), total=len(train_loader)):
             data, target = data.to(device), target.to(device)
+
+            print(data.size())
             data = torch.permute(data, (2, 0, 1))
 
             print(data.size())
