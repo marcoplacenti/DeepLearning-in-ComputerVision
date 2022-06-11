@@ -165,7 +165,7 @@ def process_image(file, data_dir, dataset):
 
 def process_set(set_name, data, data_dir, dataset):
     with Pool(processes=4) as pool:
-        func = partial(process_image, data_dir=data_dir, dataset=dataset, set_name=set_name)
+        func = partial(process_image, data_dir=data_dir, dataset=dataset)
         vals = pool.map(func, data)
     
     for idx, pair in enumerate(vals):
