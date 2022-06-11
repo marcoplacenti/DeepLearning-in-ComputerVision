@@ -23,9 +23,15 @@ val_labels = joblib.load('./data/split_dataset/val/val_labels.pkl')
 
 val_filenames = joblib.load('./data/split_dataset/val_filenames.pkl')
 
+print("Converting to numpy array")
+val_data = np.array(val_data)
+val_labels = np.array(val_labels)
+print(val_labels)
+print("Converting to tensor")
 tensor_x = torch.Tensor(val_data) # transform to torch tensor
 tensor_y = torch.Tensor(val_labels)
 
+print("Creating dataset and data loader")
 my_dataset = TensorDataset(tensor_x,tensor_y) # create your datset
 my_dataloader = DataLoader(my_dataset) # create your dataloader
 
