@@ -7,6 +7,14 @@ import torch
 
 import numpy as np
 
+super_categories = ['background','Aluminium foil', 'Battery', 'Blister pack', 'Bottle', 
+                    'Bottle cap', 'Broken glass', 'Can', 'Carton', 'Cup', 'Food waste', 
+                    'Glass jar', 'Lid', 'Other plastic', 'Paper', 'Paper bag', 'Plastic bag & wrapper', 
+                    'Plastic container', 'Plastic glooves', 'Plastic utensils', 'Pop tab', 'Rope & strings', 
+                    'Scrap metal', 'Shoe', 'Squeezable tube', 'Straw', 'Styrofoam piece',
+                    'Unlabeled litter', 'Cigarette']
+classes_map = {cat: idx for idx, cat in enumerate(super_categories)}
+
 def get_dataloader(set_name):
 
     dir = os.listdir(f'./data/split_dataset/{set_name}/')
@@ -29,19 +37,22 @@ def get_dataloader(set_name):
 
         lab_proposals = joblib.load(f'./data/split_dataset/{set_name}/'+lab_prefix)
         labels.extend(lab_proposals)
-            
-    classes_map = dict(zip(set(labels), range(len(labels))))
+    
     labels = np.array([np.array([int(classes_map[label])]) for label in labels])
 
     data = np.array(data, dtype=np.float32)
     data = torch.Tensor(data) # transform to torch tensor
     labels = torch.Tensor(labels)
 
+    print(data, labels)
+
     dataset = TensorDataset(data, labels) # create your datset
     dataloader = DataLoader(dataset) # create your dataloader
 
     return dataloader
 
-#val_loader = get_dataloader('val')
+val_loader = get_dataloader('val')
 #test_loader = get_dataloader('test')
-train_loader = get_dataloader('train')
+#train_loader = get_dataloader('train')
+
+
