@@ -57,8 +57,8 @@ def train(model, optimizer, train_loader, validation_loader, num_epochs):
             predicted = output.argmax(1)
             test_correct += (target==predicted).sum().cpu().item()
             
-        out_dict['train_acc'].append(train_correct/len(train_targets))
-        out_dict['test_acc'].append(test_correct/len(validation_targets))
+        out_dict['train_acc'].append(train_correct/len(len(train_loader)))
+        out_dict['test_acc'].append(test_correct/len(len(validation_loader)))
         out_dict['train_loss'].append(np.mean(train_loss))
         out_dict['test_loss'].append(np.mean(test_loss))
         print(f"Loss train: {np.mean(train_loss):.3f}\t test: {np.mean(test_loss):.3f}\t",
