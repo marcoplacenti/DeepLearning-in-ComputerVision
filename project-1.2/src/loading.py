@@ -12,7 +12,7 @@ def get_dataloader(set_name):
     dir = os.listdir(f'./data/split_dataset/{set_name}/')
     dir_len = len([d for d in dir if d.startswith(set_name+'_image')])
     if set_name == 'train':
-        dir_len = int(dir_len*0.4)
+        dir_len = int(dir_len*0.6)
 
     data_sep = []
     data, labels = [], []
