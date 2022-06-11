@@ -27,8 +27,8 @@ print(val_labels)
 val_filenames = joblib.load('./data/split_dataset/val_filenames.pkl')
 
 print("Converting to numpy array")
-val_data = np.array(val_data)
-val_labels = np.array(val_labels)
+val_data = np.array(val_data, dtype=np.float32)
+val_labels = np.array(val_labels, dtype=np.float32)
 print(val_labels)
 print("Converting to tensor")
 tensor_x = torch.Tensor(val_data) # transform to torch tensor
