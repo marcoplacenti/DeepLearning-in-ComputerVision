@@ -164,9 +164,7 @@ def process_image(file, data_dir, dataset, set_name):
         img = cropped_resized_images
         label = prop_categories
 
-    
-
-    return img, label, file_name
+    return img, label, file_name, prop_filtered, prop_categories
 
 def process_set(set_name, data, data_dir, dataset):
     with Pool(processes=4) as pool:
@@ -174,6 +172,7 @@ def process_set(set_name, data, data_dir, dataset):
         vals = pool.map(func, data)
     
     for idx, pair in tqdm(enumerate(vals)):
+        
         img = np.array(pair[0], dtype='object')
         joblib.dump(img, f'./data/split_dataset/{set_name}/{set_name}_image_{idx}.pkl', compress=5)
         
@@ -182,6 +181,14 @@ def process_set(set_name, data, data_dir, dataset):
         
         fn = np.array(pair[2], dtype='object')
         joblib.dump(fn, f'./data/split_dataset/{set_name}/{set_name}_filename_{idx}.pkl', compress=5)
+        
+        prop_filtered = np.array(pair[3], dtype='object')
+        joblib.dump(prop_filtered, f'./data/split_dataset/{set_name}/{set_name}_prop_filt_{idx}.pkl', compress=5)
+
+        prop_categories = np.array(pair[4], dtype='object')
+        joblib.dump(prop_categories, f'./data/split_dataset/{set_name}/{set_name}_prop_cat_{idx}.pkl', compress=5)
+
+
 
 if __name__ == '__main__':
 
