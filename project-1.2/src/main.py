@@ -239,7 +239,7 @@ if __name__ == '__main__':
         dataset = json.loads(f.read())
 
     dataset_size = len(dataset['images'])
-    train_dataset_size = int(0.4*dataset_size)
+    train_dataset_size = int(0.1*dataset_size)
     validation_dataset_size = int(0.05*dataset_size)
     test_dataset_size = int(0.05*dataset_size) #dataset_size - (train_dataset_size + validation_dataset_size)
 
