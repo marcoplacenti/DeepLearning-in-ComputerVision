@@ -38,9 +38,8 @@ def get_dataloader(set_name):
         lab_proposals = joblib.load(f'./data/split_dataset/{set_name}/'+lab_prefix)
         labels.extend(lab_proposals)
     
-
-    sub_labels = labels.index(classes_map['background'])
     print(len(labels))
+    sub_labels = labels.index('background')
     print(len(sub_labels))
     exit()
 
