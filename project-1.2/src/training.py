@@ -101,6 +101,8 @@ scores = np.array([])
 
 for data, target in test_loader:
     data, target = data.to(device), target.to(device)
+    data = torch.permute(data, (0, 3, 1, 2)).to(device)
+    target = target.view(-1).long().to(device)
     with torch.no_grad():
         output = model_ft(data)
     test_loss.append(loss_fun(output, target).cpu().item())
