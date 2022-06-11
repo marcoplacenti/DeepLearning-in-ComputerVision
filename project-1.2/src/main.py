@@ -173,13 +173,15 @@ def process_set(set_name, data, data_dir, dataset):
     
     for idx, pair in tqdm(enumerate(vals)):
         img = np.array(pair[0], dtype='object')
-        joblib.dump(img, f'./data/split_dataset/{set_name}/{set_name}_image_{idx}.pkl', compress=5)
+        print(img.shape)
+        #joblib.dump(img, f'./data/split_dataset/{set_name}/{set_name}_image_{idx}.pkl', compress=5)
     
         lab = np.array(pair[1], dtype='object')
-        joblib.dump(lab, f'./data/split_dataset/{set_name}/{set_name}_labels.pkl', compress=5)
+        print(lab.shape)
+        #joblib.dump(lab, f'./data/split_dataset/{set_name}/{set_name}_labels.pkl', compress=5)
         
         fn = np.array(pair[2], dtype='object')
-        joblib.dump(fn, f'./data/split_dataset/{set_name}_filenames.pkl', compress=5)
+        #joblib.dump(fn, f'./data/split_dataset/{set_name}_filenames.pkl', compress=5)
 
 if __name__ == '__main__':
 
