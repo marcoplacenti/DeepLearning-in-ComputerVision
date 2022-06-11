@@ -70,6 +70,6 @@ def get_dataloader(set_name):
 
 set = ['train', 'test', 'val']
 for s in set:
-    loader = get_dataloader(set)
+    loader = get_dataloader(s)
     torch.save(loader, f'./data/split_dataset/{s}/{s}_data_loader.pth')
 
