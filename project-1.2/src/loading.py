@@ -38,12 +38,9 @@ def get_dataloader(set_name):
         data_sep.append(img_proposals)
         data.extend(img_proposals)
 
-        print(img_proposals.shape)
-
         lab_proposals = joblib.load(f'./data/split_dataset/{set_name}/'+lab_prefix)
         labels.extend(lab_proposals)
-   
-        print(lab_proposals.shape)
+
     target_back_or_not = []
     for i in labels:
         if i == 'background': target_back_or_not.append(0)
