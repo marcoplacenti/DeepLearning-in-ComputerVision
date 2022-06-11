@@ -38,6 +38,12 @@ def get_dataloader(set_name):
         lab_proposals = joblib.load(f'./data/split_dataset/{set_name}/'+lab_prefix)
         labels.extend(lab_proposals)
     
+
+    sub_labels = labels.index(classes_map['background'])
+    print(len(labels))
+    print(len(sub_labels))
+    exit()
+
     labels = np.array([np.array([int(classes_map[label])]) for label in labels])
 
     data = np.array(data, dtype=np.float32)
