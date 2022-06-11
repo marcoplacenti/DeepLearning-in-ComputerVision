@@ -3,6 +3,7 @@ import os
 from tqdm import tqdm
 
 from torch.utils.data import TensorDataset, DataLoader
+import torch
 
 
 imgs = os.listdir('./data/split_dataset/val/')
@@ -26,7 +27,6 @@ my_dataset = TensorDataset(tensor_x,tensor_y) # create your datset
 my_dataloader = DataLoader(my_dataset) # create your dataloader
 
 print("done")
-exit()
 
 imgs = os.listdir('./data/split_dataset/test/')
 
@@ -52,7 +52,7 @@ imgs = os.listdir('./data/split_dataset/train/')
 val_data_sep = []
 val_data = []
 for idx, img in tqdm(enumerate(imgs)):
-    if img.startswith('train_image'):
+    if img.startswith('train_image') and idx < 300:
         img_proposals = joblib.load('./data/split_dataset/train/'+img)
         val_data_sep.append(img_proposals)
         val_data.extend(img_proposals)
