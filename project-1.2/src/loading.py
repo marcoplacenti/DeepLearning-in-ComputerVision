@@ -37,24 +37,18 @@ def get_dataloader(set_name):
 
         lab_proposals = joblib.load(f'./data/split_dataset/{set_name}/'+lab_prefix)
         labels.extend(lab_proposals)
-    
-    print(len(labels))
-    background_labels = [idx for idx, lab in enumerate(labels) if lab=='background']
-    object_labels = [idx for idx, lab in enumerate(labels) if lab!='background']
    
     target_back_or_not = []
     for i in labels:
         if i == 'background': target_back_or_not.append(0)
         else: target_back_or_not.append(1)
     target_back_or_not = np.array(target_back_or_not)
-    print('target train 0/1: {}/{}'.format(
-        len(np.where(target_back_or_not == 0)[0]), len(np.where(target_back_or_not == 1)[0])))
-
-    #class_sample_count = np.array(
-    #    [len(np.where(target_back_or_not == t)[0]) for t in np.unique(target_back_or_not)])
-
-    #weight = 1. / class_sample_count
-    #samples_weight = np.array([weight[t] for t in target_back_or_not])
+    
+    data = np.array(data, dtype=np.float32)
+    data = torch.Tensor(data) # transform to torch tensor
+    
+    labels = np.array([np.array([int(classes_map[label])]) for label in labels])
+    labels = torch.Tensor(labels)
 
     samples_weight = []
     for t in target_back_or_not:
@@ -65,29 +59,13 @@ def get_dataloader(set_name):
     samples_weight = samples_weight.double()
     sampler = WeightedRandomSampler(samples_weight, len(samples_weight))
 
-    labels = np.array([np.array([int(classes_map[label])]) for label in labels])
-
-    data = np.array(data, dtype=np.float32)
-
-    data = torch.Tensor(data) # transform to torch tensor
-    labels = torch.Tensor(labels)
-
-    idxs = (labels == classes_map['background']).nonzero(as_tuple=True)[0]
-    print(idxs)
-
     dataset = TensorDataset(data, labels) # create your datset
     dataloader = DataLoader(dataset, batch_size=64, sampler=sampler, num_workers=3)
-    #dataloader = DataLoader(dataset) # create your dataloader
-
-    for idx, batch in enumerate(dataloader):
-        x, y = batch
-        print(y)
-        break
 
     return dataloader
 
 val_loader = get_dataloader('val')
 #test_loader = get_dataloader('test')
-#train_loader = get_dataloader('train')
+train_loader = get_dataloader('train')
 
 
