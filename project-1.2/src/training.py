@@ -51,6 +51,8 @@ def train(model, optimizer, train_loader, validation_loader, num_epochs):
         model.eval()
         for data, target in validation_loader:
             data, target = data.to(device), target.to(device)
+            data = torch.permute(data, (0, 3, 1, 2)).to(device)
+            target = target.view(-1).long().to(device)
             with torch.no_grad():
                 output = model(data)
             test_loss.append(loss_fun(output, target).cpu().item())
