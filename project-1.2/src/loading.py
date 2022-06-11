@@ -17,7 +17,4 @@ val_labels = joblib.load('./data/split_dataset/val/val_labels.pkl')
 
 val_filenames = joblib.load('./data/split_dataset/val_filenames.pkl')
 
-print(np.array(val_data_sep).shape)
-print(np.array(val_data).shape)
-print(np.array(val_labels).shape)
-print(np.array(val_filenames).shape)
+print(val_data)
