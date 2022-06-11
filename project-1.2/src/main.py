@@ -135,7 +135,7 @@ def assign_category_to_proposal(prop, img_annots):
 
 def crop_images_to_proposals(filepath, prop, new_image_size, img_annots):
     image = cv2.imread(filepath)
-    image = cv2.resize(image,(img_annots['new_size'][0],img_annots['new_size'][1]))
+    image = cv2.resize(image, (img_annots['new_size'][0],img_annots['new_size'][1]))
     cropped_resized_images = []
     for box in prop:
         cropped_image = image[int(box[1]):int(box[1]+box[3]),int(box[0]):int(box[0] + box[2])]
@@ -153,6 +153,8 @@ def process_image(file, data_dir, dataset):
     img_annots = get_image_ground_truth(dataset, file_name)
     prop = get_image_proposals(data_dir + file_name, img_annots)
     prop_categories, prop_filtered = assign_category_to_proposal(prop, img_annots)
+    return prop_categories, prop_filtered
+
     cropped_resized_images = crop_images_to_proposals(data_dir + file_name, prop_filtered, cropped_image_size, img_annots)
     cropped_resized_images_ground_truth = crop_images_to_proposals(data_dir + file_name,img_annots['bbox'], cropped_image_size, img_annots)
     
@@ -163,18 +165,20 @@ def process_image(file, data_dir, dataset):
 
 def process_set(set_name, data, data_dir, dataset):
     with Pool(processes=4) as pool:
-        func = partial(process_image, data_dir=data_dir, dataset=dataset)
+        func = partial(process_image, data_dir=data_dir, dataset=dataset, set_name=set_name)
         vals = pool.map(func, data)
     
     for idx, pair in enumerate(vals):
         img = np.array(pair[0], dtype='object')
-        joblib.dump(img, f'./data/split_dataset/{set_name}/{set_name}_image_{idx}.pkl', compress=5)
+        #joblib.dump(img, f'./data/split_dataset/{set_name}/{set_name}_image_{idx}.pkl', compress=5)
+        joblib.dump(img, f'./data/split_dataset/{set_name}/{set_name}_image_{idx}_prop_categories.pkl', compress=5)
 
         lab = np.array(pair[1], dtype='object')
-        joblib.dump(lab, f'./data/split_dataset/{set_name}/{set_name}_labels.pkl', compress=5)
+        #joblib.dump(lab, f'./data/split_dataset/{set_name}/{set_name}_labels.pkl', compress=5)
+        joblib.dump(lab, f'./data/split_dataset/{set_name}/{set_name}_labels_prop_filtered.pkl', compress=5)
 
         fn = np.array(pair[2], dtype='object')
-        joblib.dump(fn, f'./data/split_dataset/{set_name}_filenames.pkl', compress=5)
+        #joblib.dump(fn, f'./data/split_dataset/{set_name}_filenames.pkl', compress=5)
 
 if __name__ == '__main__':
 
@@ -187,9 +191,9 @@ if __name__ == '__main__':
         dataset = json.loads(f.read())
 
     dataset_size = len(dataset['images'])
-    train_dataset_size = int(0.8*dataset_size)
-    validation_dataset_size = int(0.1*dataset_size)
-    test_dataset_size = dataset_size - (train_dataset_size + validation_dataset_size)
+    train_dataset_size = int(0.3*dataset_size)
+    validation_dataset_size = int(0.075*dataset_size)
+    test_dataset_size = int(0.075*dataset_size) #dataset_size - (train_dataset_size + validation_dataset_size)
 
     np.random.seed(42)
     arr = np.arange(0,dataset_size)
