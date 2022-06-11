@@ -3,7 +3,7 @@ import os
 import json
 from copy import deepcopy
 import joblib
-
+from tqdm import tqdm
 from multiprocessing import Pool
 from functools import partial
 
@@ -171,7 +171,7 @@ def process_set(set_name, data, data_dir, dataset):
         func = partial(process_image, data_dir=data_dir, dataset=dataset, set_name=set_name)
         vals = pool.map(func, data)
     
-    for idx, pair in enumerate(vals):
+    for idx, pair in tqdm(enumerate(vals)):
         img = np.array(pair[0], dtype='object')
         joblib.dump(img, f'./data/split_dataset/{set_name}/{set_name}_image_{idx}.pkl', compress=5)
     

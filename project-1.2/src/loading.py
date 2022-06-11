@@ -1,7 +1,8 @@
 import joblib
 import os
-import numpy as np
 from tqdm import tqdm
+
+
 
 imgs = os.listdir('./data/split_dataset/val/')
 
