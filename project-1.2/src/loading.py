@@ -39,8 +39,8 @@ def get_dataloader(set_name):
         labels.extend(lab_proposals)
     
     print(len(labels))
-    background_labels = [idx for idx, lab in labels if lab=='background']
-    object_labels = [idx for idx, lab in labels if lab!='background']
+    background_labels = [idx for idx, lab in enumerate(labels) if lab=='background']
+    object_labels = [idx for idx, lab in enumerate(labels) if lab!='background']
     print(len(background_labels))
     exit()
 
