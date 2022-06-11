@@ -22,15 +22,14 @@ for idx, img in tqdm(enumerate(imgs)):
 val_labels = joblib.load('./data/split_dataset/val/val_labels.pkl')
 classes_map = dict(zip(set(val_labels), range(len(val_labels))))
 val_labels = np.array([np.array([int(classes_map[label])]) for label in val_labels])
-print(val_labels)
 
 val_filenames = joblib.load('./data/split_dataset/val_filenames.pkl')
 
-print("Converting to numpy array")
 val_data = np.array(val_data, dtype=np.float32)
-print("Converting to tensor")
 tensor_x = torch.Tensor(val_data) # transform to torch tensor
 tensor_y = torch.Tensor(val_labels)
+
+print(tensor_x.size(), tensor_y.size())
 
 print("Creating dataset and data loader")
 my_dataset = TensorDataset(tensor_x,tensor_y) # create your datset
