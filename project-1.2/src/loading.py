@@ -11,14 +11,16 @@ imgs = os.listdir('./data/split_dataset/val/')
 
 val_data_sep = []
 val_data, val_labels = [], []
-for idx, img in tqdm(enumerate(imgs)):
-    if img.startswith('val_image') and idx < 10:
-        img_proposals = joblib.load('./data/split_dataset/val/'+img)
-        val_data_sep.append(img_proposals)
-        val_data.extend(img_proposals)
-    if img.startswith('val_labels') and idx < 10:
-        lab_proposals = joblib.load('./data/split_dataset/val/'+img)
-        val_labels.extend(lab_proposals)
+for idx in tqdm(range(len(imgs))):
+    img_prefix = f'val_image_{idx}.pkl'
+    lab_prefix = f'val_labels_{idx}.pkl'
+    
+    img_proposals = joblib.load('./data/split_dataset/val/'+img_prefix)
+    val_data_sep.append(img_proposals)
+    val_data.extend(img_proposals)
+
+    lab_proposals = joblib.load('./data/split_dataset/val/'+lab_prefix)
+    val_labels.extend(lab_proposals)
         
 classes_map = dict(zip(set(val_labels), range(len(val_labels))))
 val_labels = np.array([np.array([int(classes_map[label])]) for label in val_labels])
