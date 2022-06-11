@@ -13,9 +13,12 @@ val_data = []
 for idx, img in tqdm(enumerate(imgs)):
     if img.startswith('val_image'):
         img_proposals = joblib.load('./data/split_dataset/val/'+img)
+        print(img_proposals.shape)
+        exit()
         val_data_sep.append(img_proposals)
         val_data.extend(img_proposals)
 
+exit()
 val_labels = joblib.load('./data/split_dataset/val/val_labels.pkl')
 
 val_filenames = joblib.load('./data/split_dataset/val_filenames.pkl')
