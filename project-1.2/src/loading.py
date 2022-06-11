@@ -2,7 +2,7 @@ import joblib
 import os
 from tqdm import tqdm
 
-from torch.utils.data import TensorDataset, DataLoader
+from torch.utils.data import TensorDataset, DataLoader, WeightedRandomSampler
 import torch
 
 import numpy as np
@@ -41,8 +41,29 @@ def get_dataloader(set_name):
     print(len(labels))
     background_labels = [idx for idx, lab in enumerate(labels) if lab=='background']
     object_labels = [idx for idx, lab in enumerate(labels) if lab!='background']
-    print(len(background_labels))
-    exit()
+   
+    target_back_or_not = []
+    for i in labels:
+        if i == 'background': target_back_or_not.append(0)
+        else: target_back_or_not.append(1)
+    target_back_or_not = np.array(target_back_or_not)
+    print('target train 0/1: {}/{}'.format(
+        len(np.where(target_back_or_not == 0)[0]), len(np.where(target_back_or_not == 1)[0])))
+
+    #class_sample_count = np.array(
+    #    [len(np.where(target_back_or_not == t)[0]) for t in np.unique(target_back_or_not)])
+
+    #weight = 1. / class_sample_count
+    #samples_weight = np.array([weight[t] for t in target_back_or_not])
+
+    samples_weight = []
+    for t in target_back_or_not:
+        if t == 0: samples_weight.append(1)
+        else: samples_weight.append(16)
+
+    samples_weight = torch.from_numpy(np.array(samples_weight))
+    samples_weigth = samples_weight.double()
+    sampler = WeightedRandomSampler(samples_weight, len(samples_weight))
 
     labels = np.array([np.array([int(classes_map[label])]) for label in labels])
 
