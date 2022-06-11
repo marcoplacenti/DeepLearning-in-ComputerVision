@@ -22,9 +22,8 @@ def train(model, optimizer, train_loader, validation_loader, num_epochs):
         for minibatch_no, (data, target) in tqdm(enumerate(train_loader), total=len(train_loader)):
             data, target = data.to(device), target.to(device)
 
-            data = torch.permute(data, (0, 3, 1, 2))
-            target = target.view(-1)
-            print(target.size())
+            data = torch.permute(data, (0, 3, 1, 2)).to(device)
+            target = target.view(-1).to(device)
 
             #Zero the gradients computed for each weight
             optimizer.zero_grad()
