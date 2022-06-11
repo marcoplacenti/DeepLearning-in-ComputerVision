@@ -41,10 +41,12 @@ def get_dataloader(set_name):
     labels = np.array([np.array([int(classes_map[label])]) for label in labels])
 
     data = np.array(data, dtype=np.float32)
+
     data = torch.Tensor(data) # transform to torch tensor
     labels = torch.Tensor(labels)
 
-    print(data, labels)
+    idxs = (labels == classes_map['background']).nonzero(as_tuple=True)[0]
+    print(idxs)
 
     dataset = TensorDataset(data, labels) # create your datset
     dataloader = DataLoader(dataset) # create your dataloader
