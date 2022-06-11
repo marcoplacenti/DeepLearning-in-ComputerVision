@@ -83,8 +83,6 @@ model_ft = model_ft.to(device)
 optimizer = torch.optim.Adam(model_ft.parameters())
 
 train_loader = torch.load('./data/split_dataset/train/train_data_loader.pth')
-print(train_loader)
-exit()
 validation_loader = torch.load('./data/split_dataset/val/val_data_loader.pth')
 test_loader = torch.load('./data/split_dataset/test/test_data_loader.pth')
 
