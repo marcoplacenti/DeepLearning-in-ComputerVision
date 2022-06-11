@@ -11,7 +11,7 @@ imgs = os.listdir('./data/split_dataset/val/')
 
 val_data_sep = []
 val_data, val_labels = [], []
-for idx in tqdm(range(len(imgs))):
+for idx in tqdm(range(len(imgs[10]))):
     img_prefix = f'val_image_{idx}.pkl'
     lab_prefix = f'val_labels_{idx}.pkl'
     
