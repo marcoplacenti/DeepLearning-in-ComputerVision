@@ -5,6 +5,7 @@ from tqdm import tqdm
 from torch.utils.data import TensorDataset, DataLoader
 import torch
 
+import numpy as np
 
 imgs = os.listdir('./data/split_dataset/val/')
 
@@ -14,10 +15,12 @@ for idx, img in tqdm(enumerate(imgs)):
     if img.startswith('val_image'):
         img_proposals = joblib.load('./data/split_dataset/val/'+img)
         print(img_proposals.shape)
-        exit()
+  
         val_data_sep.append(img_proposals)
-        val_data.extend(img_proposals)
 
+        val_data.extend(img_proposals)
+        print(np.array(val_data).shape)
+        exit()
 exit()
 val_labels = joblib.load('./data/split_dataset/val/val_labels.pkl')
 
