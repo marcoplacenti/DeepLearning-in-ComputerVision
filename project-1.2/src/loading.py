@@ -2,6 +2,7 @@ import joblib
 import os
 from tqdm import tqdm
 
+from torch.utils.data import TensorDataset, DataLoader
 
 
 imgs = os.listdir('./data/split_dataset/val/')
@@ -18,8 +19,14 @@ val_labels = joblib.load('./data/split_dataset/val/val_labels.pkl')
 
 val_filenames = joblib.load('./data/split_dataset/val_filenames.pkl')
 
-print("done")
+tensor_x = torch.Tensor(val_data) # transform to torch tensor
+tensor_y = torch.Tensor(val_labels)
 
+my_dataset = TensorDataset(tensor_x,tensor_y) # create your datset
+my_dataloader = DataLoader(my_dataset) # create your dataloader
+
+print("done")
+exit()
 
 imgs = os.listdir('./data/split_dataset/test/')
 
@@ -34,6 +41,8 @@ for idx, img in tqdm(enumerate(imgs)):
 val_labels = joblib.load('./data/split_dataset/test/test_labels.pkl')
 
 val_filenames = joblib.load('./data/split_dataset/test_filenames.pkl')
+
+
 
 print("done")
 
