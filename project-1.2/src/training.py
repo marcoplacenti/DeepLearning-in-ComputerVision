@@ -21,6 +21,7 @@ def train(model, optimizer, train_loader, validation_loader, num_epochs):
         train_loss = []
         for minibatch_no, (data, target) in tqdm(enumerate(train_loader), total=len(train_loader)):
             data, target = data.to(device), target.to(device)
+            print(data.size())
             #Zero the gradients computed for each weight
             optimizer.zero_grad()
             #Forward pass your image through the network
