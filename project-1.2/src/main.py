@@ -232,11 +232,11 @@ if __name__ == '__main__':
     
     
     print("Processing validation...")
-    #process_set('val', val_set, data_dir, dataset)
+    process_set('val', val_set, data_dir, dataset)
     
     print("Processing testing...")
     process_set('test', test_set, data_dir, dataset)
 
     print("Processing training...")
-    #process_set('train', train_set, data_dir, dataset)
+    process_set('train', train_set, data_dir, dataset)
     
