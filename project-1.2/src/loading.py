@@ -1,7 +1,10 @@
-import pickle
+import joblib
+
+sample = joblib.load('./data/split_dataset/train/train_image_1.pkl')
+print(sample.shape)
 
 with open('./data/split_dataset/train/train_image_1.pkl', 'rb') as pickle_file:
-    sample = pickle.load(pickle_file)
-#sample = pickle.load('./data/split_dataset/train/train_image_1.pkl')
+    sample = joblib.load(pickle_file)
+
 
 print(sample.shape)
