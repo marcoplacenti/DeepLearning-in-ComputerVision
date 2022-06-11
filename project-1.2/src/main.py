@@ -159,10 +159,12 @@ def process_image(file, data_dir, dataset, set_name):
     
     if set_name != 'test':
         img = cropped_resized_images + cropped_resized_images_ground_truth
+        label = prop_categories + img_annots['supercategory']
     else:
         img = cropped_resized_images
+        label = prop_categories
 
-    label = prop_categories + img_annots['supercategory']
+    
 
     return img, label, file_name
 
@@ -223,11 +225,11 @@ if __name__ == '__main__':
     
     
     print("Processing validation...")
-    process_set('val', val_set, data_dir, dataset)
+    #process_set('val', val_set, data_dir, dataset)
     
     print("Processing testing...")
     process_set('test', test_set, data_dir, dataset)
 
     print("Processing training...")
-    process_set('train', train_set, data_dir, dataset)
+    #process_set('train', train_set, data_dir, dataset)
     
