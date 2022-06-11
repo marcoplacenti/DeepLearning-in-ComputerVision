@@ -7,69 +7,36 @@ import torch
 
 import numpy as np
 
-imgs = os.listdir('./data/split_dataset/val/')
+def get_dataloader(set_name):
 
-val_data_sep = []
-val_data, val_labels = [], []
-for idx in tqdm(range(len(imgs[10]))):
-    img_prefix = f'val_image_{idx}.pkl'
-    lab_prefix = f'val_labels_{idx}.pkl'
-    
-    img_proposals = joblib.load('./data/split_dataset/val/'+img_prefix)
-    val_data_sep.append(img_proposals)
-    val_data.extend(img_proposals)
+    dir = os.listdir(f'./data/split_dataset/{set_name}/')
 
-    lab_proposals = joblib.load('./data/split_dataset/val/'+lab_prefix)
-    val_labels.extend(lab_proposals)
+    data_sep = []
+    data, labels = [], []
+    for idx in tqdm(range(len(dir))):
+        img_prefix = f'{set_name}_image_{idx}.pkl'
+        lab_prefix = f'{set_name}_labels_{idx}.pkl'
         
-classes_map = dict(zip(set(val_labels), range(len(val_labels))))
-val_labels = np.array([np.array([int(classes_map[label])]) for label in val_labels])
+        img_proposals = joblib.load(f'./data/split_dataset/{set_name}/'+img_prefix)
+        data_sep.append(img_proposals)
+        data.extend(img_proposals)
 
-#val_filenames = joblib.load('./data/split_dataset/val_filenames.pkl')
+        lab_proposals = joblib.load(f'./data/split_dataset/{set_name}/'+lab_prefix)
+        labels.extend(lab_proposals)
+            
+    classes_map = dict(zip(set(labels), range(len(labels))))
+    labels = np.array([np.array([int(classes_map[label])]) for label in labels])
 
-val_data = np.array(val_data, dtype=np.float32)
-tensor_x = torch.Tensor(val_data) # transform to torch tensor
-tensor_y = torch.Tensor(val_labels)
+    data = np.array(data, dtype=np.float32)
+    data = torch.Tensor(data) # transform to torch tensor
+    labels = torch.Tensor(labels)
 
-print(tensor_x.size(), tensor_y.size())
+    dataset = TensorDataset(data, labels) # create your datset
+    dataloader = DataLoader(dataset) # create your dataloader
 
-print("Creating dataset and data loader")
-my_dataset = TensorDataset(tensor_x,tensor_y) # create your datset
-my_dataloader = DataLoader(my_dataset) # create your dataloader
+    return dataloader
 
-print("done")
-
-imgs = os.listdir('./data/split_dataset/test/')
-
-val_data_sep = []
-val_data = []
-for idx, img in tqdm(enumerate(imgs)):
-    if img.startswith('test_image'):
-        img_proposals = joblib.load('./data/split_dataset/test/'+img)
-        val_data_sep.append(img_proposals)
-        val_data.extend(img_proposals)
-
-val_labels = joblib.load('./data/split_dataset/test/test_labels.pkl')
-
-val_filenames = joblib.load('./data/split_dataset/test_filenames.pkl')
-
-
-
-print("done")
-
-
-imgs = os.listdir('./data/split_dataset/train/')
-
-val_data_sep = []
-val_data = []
-for idx, img in tqdm(enumerate(imgs)):
-    if img.startswith('train_image') and idx < 300:
-        img_proposals = joblib.load('./data/split_dataset/train/'+img)
-        val_data_sep.append(img_proposals)
-        val_data.extend(img_proposals)
-
-val_labels = joblib.load('./data/split_dataset/train/train_labels.pkl')
-
-val_filenames = joblib.load('./data/split_dataset/train_filenames.pkl')
-
-print("done")
+val_loader = get_dataloader('val')
+test_loader = get_dataloader('test')
+exit()
+train_loader = get_dataloader('train')
