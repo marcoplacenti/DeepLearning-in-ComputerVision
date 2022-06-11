@@ -1,12 +1,13 @@
 import joblib
 import os
 import numpy as np
+from tqdm import tqdm
 
 imgs = os.listdir('./data/split_dataset/val/')
 
 val_data_sep = []
 val_data = []
-for img in imgs:
+for idx, img in tqdm(enumerate(imgs)):
     if img.startswith('val_image'):
         img_proposals = joblib.load('./data/split_dataset/val/'+img)
         val_data_sep.append(img_proposals)
