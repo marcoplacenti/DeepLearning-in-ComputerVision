@@ -40,5 +40,5 @@ def get_dataloader(set_name):
     return dataloader
 
 val_loader = get_dataloader('val')
-test_loader = get_dataloader('test')
+#test_loader = get_dataloader('test')
 train_loader = get_dataloader('train')
