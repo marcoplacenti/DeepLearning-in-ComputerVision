@@ -22,6 +22,7 @@ for idx, img in tqdm(enumerate(imgs)):
 val_labels = joblib.load('./data/split_dataset/val/val_labels.pkl')
 val_labels_map = dict(zip(set(val_labels), range(len(val_labels))))
 val_labels = map(lambda x: val_labels_map[x], val_labels)
+print(val_labels)
 
 val_filenames = joblib.load('./data/split_dataset/val_filenames.pkl')
 
