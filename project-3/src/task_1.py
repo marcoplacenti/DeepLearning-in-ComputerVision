@@ -16,8 +16,8 @@ from torchsummary import summary
 import torch.optim as optim
 
 #@title Data Loader
-data_path = 'isic_dataset/'
-#data_path = '/dtu/datasets1/02514/isic'
+#data_path = 'isic_dataset/'
+data_path = '/dtu/datasets1/02514/isic'
 class ISIC(torch.utils.data.Dataset):
     def __init__(self, train, transform, seg = 0, data_path=data_path):
         'Initialization'
