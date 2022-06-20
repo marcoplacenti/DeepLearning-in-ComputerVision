@@ -400,8 +400,6 @@ def train(model, opt, loss_fn, epochs, train_loader, test_loader):
             avg_loss += loss
             avg_perf += perf
         
-        print("preds & gt")
-        print(preds[0], gt[0])
 
         avg_loss = avg_loss / len(test_loader)
         avg_perf = avg_perf / len(test_loader)
@@ -422,7 +420,7 @@ def train(model, opt, loss_fn, epochs, train_loader, test_loader):
             plt.title('Output')
             plt.axis('off')
         plt.suptitle('%d / %d - loss: %f' % (epoch+1, epochs, avg_loss))
-        plt.savefig("figures/image_name.png")
+        #plt.savefig("figures/image_name.png")
     return [train_loss, test_loss, train_perf, test_perf]
 
 def confusion_mat(model, test_loader):
@@ -473,7 +471,7 @@ def print_model_performance(model, test_loader, performance):
         plt.xticks([])
         plt.yticks([])
 
-    plt.show()
+    #plt.show()
 
     plt.plot(train_loss, '--')
     plt.plot(test_loss, '--')
@@ -484,7 +482,7 @@ def print_model_performance(model, test_loader, performance):
     plt.xlabel('Epochs')
     plt.xticks(range(1,21))
     plt.grid()
-    plt.show()
+    #plt.show()
 
     print(confusion_mat(model, test_loader))
 
