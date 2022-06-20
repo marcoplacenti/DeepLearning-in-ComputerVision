@@ -385,7 +385,7 @@ def train(model, opt, loss_fn, epochs, train_loader, test_loader):
         # calculate metrics to show the user
         avg_loss = avg_loss / len(train_loader)
         avg_perf = avg_perf / len(train_loader) #?
-        print(f"Loss: {avg_loss}, Perf: {avg_perf}")
+        print(f"Loss: {avg_loss.item()}, Perf: {avg_perf.item()}")
         toc = time()
         #print(' - loss: %f' % avg_loss)
                 
