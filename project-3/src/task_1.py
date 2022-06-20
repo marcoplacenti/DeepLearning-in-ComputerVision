@@ -402,7 +402,7 @@ def train(model, opt, loss_fn, epochs, train_loader, test_loader):
             #Y_batch = Y_batch[:,1,:,:].to(device)
             Y_hat = nn.Sigmoid()(model(X_batch))#.squeeze(1)#[:,0,:,:]
             loss = loss_fn(Y_hat, Y_batch)
-            perf = dice_score(Y_hat >= 0.5, Y_batch)
+            perf = dice_score(Y_hat >= 0.5, Y_batch >= 0.5)
             #print(loss, perf)
             avg_loss += loss
             avg_perf += perf
@@ -462,7 +462,7 @@ def print_model_performance(model, test_loader, performance):
         plt.yticks([])
 
         plt.subplot(4, 6, i+7)
-        plt.imshow(labels[i][1])
+        plt.imshow(labels[i][0])
         if i == 0: plt.ylabel('Segmentations')
         plt.xticks([])
         plt.yticks([])
@@ -522,4 +522,4 @@ if __name__ == "__main__":
     model = DilatedNet().to(device)
     summary(model, (3, 128, 128))
     performance = train(model, optim.Adam(model.parameters(), 0.0001), nn.BCELoss(), 10, train_loader, test_loader)
-    print_model_performance(model, test_loader, performance)
+    #print_model_performance(model, test_loader, performance)
