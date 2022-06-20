@@ -16,15 +16,15 @@ from torchsummary import summary
 import torch.optim as optim
 
 #@title Data Loader
-#data_path = 'isic_dataset/'
-data_path = '/dtu/datasets1/02514/isic'
+data_path = 'isic_dataset/'
+#data_path = '/dtu/datasets1/02514/isic'
 class ISIC(torch.utils.data.Dataset):
     def __init__(self, train, transform, seg = 0, data_path=data_path):
         'Initialization'
         self.transform = transform
         self.train = train
         data_path = os.path.join(data_path, 'train_allstyles' if train else 'test_style0')
-        self.image_paths = sorted(glob.glob(data_path + '/Images/*.jpg'))
+        #self.image_paths = sorted(glob.glob(data_path + '/Images/*.jpg'))
         if train:
             if seg == 1:
                 self.segmentation_paths = sorted(glob.glob(data_path + '/Segmentations/*_1_*.png'))
@@ -34,7 +34,10 @@ class ISIC(torch.utils.data.Dataset):
                 self.segmentation_paths = sorted(glob.glob(data_path + '/Segmentations/*_0_*.png'))
         else:
             self.segmentation_paths = sorted(glob.glob(data_path + '/Segmentations/*.png'))
-                
+
+        names = [seg.split("/")[-1].split("_")[1] for seg in self.segmentation_paths]
+        self.image_paths = [glob.glob(data_path + '/Images/ISIC_' + filename + '.jpg')[0] for filename in names]            
+        
     def __len__(self):
         'Returns the total number of samples'
         return len(self.image_paths)
@@ -164,7 +167,7 @@ class DilatedNet(nn.Module):
 
 
 #@title Loaders
-def simple_data_load(batch_size = 6, size = 128):
+def simple_data_load(batch_size = 32, size = 128):
   train_transform = transforms.Compose([transforms.Resize((size, size)), 
                                       transforms.ToTensor()])
 
@@ -338,11 +341,13 @@ def augmented_data_load_single_style(batch_size = 32, size = 128, style = 0):
 
 #@title Training, Loss and Performance Evaluation
 def dice_score(pred, target):
+    pred = pred.long()
+    target = target.long()
     smooth = 1.
-    m1 = torch.reshape(pred, [-1])
-    m2 = torch.reshape(target, [-1])
-    intersection = (m1 * m2).sum().float()
-    return (2. * intersection + smooth) / (m1.sum() + m2.sum() + smooth)
+    #m1 = torch.reshape(pred, [-1])
+    #m2 = torch.reshape(target, [-1])
+    intersection = torch.mul(pred, target).sum().float()
+    return (2. * intersection + smooth) / (pred.sum() + target.sum() + smooth)
 
 def train(model, opt, loss_fn, epochs, train_loader, test_loader):
     torch.cuda.empty_cache()
@@ -370,14 +375,17 @@ def train(model, opt, loss_fn, epochs, train_loader, test_loader):
             # forward
             Y_pred = nn.Sigmoid()(model(X_batch))
             loss = loss_fn(Y_pred, Y_batch)  # forward-pass
-            perf = dice_score(Y_pred >= 0.5, Y_batch)
-            #print(loss, perf)
+            perf = dice_score(Y_pred <= 0.5, Y_batch <= 0.5)
+            
             loss.backward()  # backward-pass
             opt.step()  # update weights
+            avg_loss += loss
+            avg_perf += perf
 
-            # calculate metrics to show the user
-            avg_loss += loss / len(train_loader)
-            avg_perf += perf / len(train_loader) #?
+        # calculate metrics to show the user
+        avg_loss += loss / len(train_loader)
+        avg_perf += perf / len(train_loader) #?
+        print(f"Loss: {avg_loss}, Perf: {avg_perf}")
         toc = time()
         #print(' - loss: %f' % avg_loss)
                 
@@ -386,15 +394,13 @@ def train(model, opt, loss_fn, epochs, train_loader, test_loader):
         # show intermediate results
         avg_loss = 0
         avg_perf = 0
-        preds, gt = [], []
+
         model.eval()  # testing mode
         for X_batch, Y_batch in test_loader:
             X_batch = X_batch.to(device)
             Y_batch = Y_batch.to(device)
             #Y_batch = Y_batch[:,1,:,:].to(device)
             Y_hat = nn.Sigmoid()(model(X_batch))#.squeeze(1)#[:,0,:,:]
-            preds.append(Y_hat)
-            gt.append(Y_batch)
             loss = loss_fn(Y_hat, Y_batch)
             perf = dice_score(Y_hat >= 0.5, Y_batch)
             avg_loss += loss
@@ -403,6 +409,7 @@ def train(model, opt, loss_fn, epochs, train_loader, test_loader):
 
         avg_loss = avg_loss / len(test_loader)
         avg_perf = avg_perf / len(test_loader)
+        print(f"Loss: {avg_loss}, Perf: {avg_perf}")
         test_loss.append(avg_loss.detach().cpu())
         test_perf.append(avg_perf.detach().cpu())
             
@@ -492,25 +499,26 @@ if __name__ == "__main__":
     print(device)
     print("Device count: " + str(torch.cuda.device_count()))
 
-    train_loader, test_loader = simple_data_load()
+    #train_loader, test_loader = simple_data_load()
 
+    """
     model = UNet().to(device)
     summary(model, (3, 128, 128))
     performance = train(model, optim.Adam(model.parameters(), 0.0001), nn.BCELoss(), 20, train_loader, test_loader)
     print_model_performance(model, test_loader, performance)
-
+    
     train_loader, test_loader = augmented_data_load(batch_size = 16)
-    if 'model' in locals(): del model
+    #if 'model' in locals(): del model
     torch.cuda.empty_cache()
     model = UNet().to(device)
     summary(model, (3, 128, 128))
     performance = train(model, optim.Adam(model.parameters(), 0.0001), nn.BCELoss(), 20, train_loader, test_loader)
     print_model_performance(model, test_loader, performance)
-
-    train_loader, test_loader = augmented_data_load(batch_size = 16)
-    if 'model' in locals(): del model
+    """
+    train_loader, test_loader = augmented_data_load(batch_size = 32)
+    #if 'model' in locals(): del model
     torch.cuda.empty_cache()
     model = DilatedNet().to(device)
     summary(model, (3, 128, 128))
-    performance = train(model, optim.Adam(model.parameters(), 0.0001), nn.BCELoss(), 20, train_loader, test_loader)
+    performance = train(model, optim.Adam(model.parameters(), 0.0001), nn.BCELoss(), 10, train_loader, test_loader)
     print_model_performance(model, test_loader, performance)
