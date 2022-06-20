@@ -16,8 +16,8 @@ from torchsummary import summary
 import torch.optim as optim
 
 #@title Data Loader
-#data_path = 'isic_dataset/'
-data_path = '/dtu/datasets1/02514/isic'
+data_path = 'isic_dataset/'
+#data_path = '/dtu/datasets1/02514/isic'
 class ISIC(torch.utils.data.Dataset):
     def __init__(self, train, transform, seg = 0, data_path=data_path):
         'Initialization'
@@ -375,16 +375,16 @@ def train(model, opt, loss_fn, epochs, train_loader, test_loader):
             # forward
             Y_pred = nn.Sigmoid()(model(X_batch))
             loss = loss_fn(Y_pred, Y_batch)  # forward-pass
-            perf = dice_score(Y_pred <= 0.5, Y_batch <= 0.5)
-            
+            perf = dice_score(Y_pred >= 0.5, Y_batch >= 0.5)
+            print(loss, perf)
             loss.backward()  # backward-pass
             opt.step()  # update weights
             avg_loss += loss
             avg_perf += perf
 
         # calculate metrics to show the user
-        avg_loss += loss / len(train_loader)
-        avg_perf += perf / len(train_loader) #?
+        avg_loss = avg_loss / len(train_loader)
+        avg_perf = avg_perf / len(train_loader) #?
         print(f"Loss: {avg_loss}, Perf: {avg_perf}")
         toc = time()
         #print(' - loss: %f' % avg_loss)
@@ -403,12 +403,13 @@ def train(model, opt, loss_fn, epochs, train_loader, test_loader):
             Y_hat = nn.Sigmoid()(model(X_batch))#.squeeze(1)#[:,0,:,:]
             loss = loss_fn(Y_hat, Y_batch)
             perf = dice_score(Y_hat >= 0.5, Y_batch)
+            print(loss, perf)
             avg_loss += loss
             avg_perf += perf
         
-
-        avg_loss = avg_loss / len(test_loader)
-        avg_perf = avg_perf / len(test_loader)
+        # calculate metrics to show the user
+        avg_loss = avg_loss / len(train_loader)
+        avg_perf = avg_perf / len(train_loader) #?
         print(f"Loss: {avg_loss}, Perf: {avg_perf}")
         test_loss.append(avg_loss.detach().cpu())
         test_perf.append(avg_perf.detach().cpu())
@@ -499,7 +500,7 @@ if __name__ == "__main__":
     print(device)
     print("Device count: " + str(torch.cuda.device_count()))
 
-    #train_loader, test_loader = simple_data_load()
+    train_loader, test_loader = simple_data_load()
 
     """
     model = UNet().to(device)
@@ -515,7 +516,7 @@ if __name__ == "__main__":
     performance = train(model, optim.Adam(model.parameters(), 0.0001), nn.BCELoss(), 20, train_loader, test_loader)
     print_model_performance(model, test_loader, performance)
     """
-    train_loader, test_loader = augmented_data_load(batch_size = 32)
+    #train_loader, test_loader = augmented_data_load(batch_size = 32)
     #if 'model' in locals(): del model
     torch.cuda.empty_cache()
     model = DilatedNet().to(device)
