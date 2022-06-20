@@ -376,7 +376,7 @@ def train(model, opt, loss_fn, epochs, train_loader, test_loader):
             Y_pred = nn.Sigmoid()(model(X_batch))
             loss = loss_fn(Y_pred, Y_batch)  # forward-pass
             perf = dice_score(Y_pred >= 0.5, Y_batch >= 0.5)
-            print(loss, perf)
+            #print(loss, perf)
             loss.backward()  # backward-pass
             opt.step()  # update weights
             avg_loss += loss
@@ -403,7 +403,7 @@ def train(model, opt, loss_fn, epochs, train_loader, test_loader):
             Y_hat = nn.Sigmoid()(model(X_batch))#.squeeze(1)#[:,0,:,:]
             loss = loss_fn(Y_hat, Y_batch)
             perf = dice_score(Y_hat >= 0.5, Y_batch)
-            print(loss, perf)
+            #print(loss, perf)
             avg_loss += loss
             avg_perf += perf
         
